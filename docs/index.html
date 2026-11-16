@@ -314,17 +314,16 @@ const rd=(()=>{
     if(ms>14&&steps>2)steps--;else if(ms<8&&steps<16)steps++;raf=requestAnimationFrame(frame)}
   function paint(e){if(!u)return;const r=cv.getBoundingClientRect();seed(Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H),Math.max(2,Math.round(4*sc)))}
   function cellAt(e){const r=cv.getBoundingClientRect();return[Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H)]}
-  // A click is a blast: a black shockwave ring races outward, leaving a clear yellow crater that the pattern then regrows into; debris lands beyond it.
-  function boomStep(b){const r=b.r,r2=r*r,i2=(r-b.T)*(r-b.T),c2=b.core*b.core;
-    const x0=Math.max(0,Math.floor(b.cx-r-1)),x1=Math.min(W-1,Math.ceil(b.cx+r+1)),y0=Math.max(0,Math.floor(b.cy-r-1)),y1=Math.min(H-1,Math.ceil(b.cy+r+1));
-    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const dx=x-b.cx,dy=y-b.cy,d2=dx*dx+dy*dy;if(d2<c2)continue;const i=y*W+x;
-      if(d2<i2){u[i]=1;v[i]=0}else if(d2<=r2){u[i]=.5;v[i]=1}}
+  // A click clears a space: a ragged, expanding patch is wiped to blank yellow, and the surrounding pattern grows back into it.
+  function boomStep(b){const r=b.r,x0=Math.max(0,Math.floor(b.cx-r*1.35)),x1=Math.min(W-1,Math.ceil(b.cx+r*1.35)),y0=Math.max(0,Math.floor(b.cy-r*1.35)),y1=Math.min(H-1,Math.ceil(b.cy+r*1.35));
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const dx=x-b.cx,dy=y-b.cy,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
+      const rr=r*(1+.15*Math.sin(3*a+b.p[0])+.1*Math.sin(5*a+b.p[1])+.07*Math.sin(8*a+b.p[2])+.04*Math.sin(13*a+b.p[3]));   // the edge wanders, so it never reads as a circle
+      if(d<rr){const i=y*W+x;u[i]=1;v[i]=0}}
     b.r+=b.sp;return b.r>b.max}
-  function burst(e){if(!u)return;const[cx,cy]=cellAt(e),max=Math.min(.42*Math.min(W,H),300/cs);
-    const b={cx,cy,r:2,max,sp:Math.max(2,7/cs),T:Math.max(3,7/cs),core:Math.max(3,11/cs)};seed(cx,cy,Math.round(b.core));
-    for(let k=0;k<18;k++){const a=Math.random()*6.2832,d=max*(.7+Math.random()*.7);seed(Math.round(cx+Math.cos(a)*d),Math.round(cy+Math.sin(a)*d),Math.max(2,Math.round((2+Math.random()*3)*sc)))}   // debris
+  function burst(e){if(!u)return;const[cx,cy]=cellAt(e),max=Math.min(.36*Math.min(W,H),260/cs);
+    const b={cx,cy,r:2,max,sp:Math.max(1.6,5/cs),p:[0,1,2,3].map(()=>Math.random()*6.2832)};
     if(!reduce){cv.classList.remove("boom");void cv.offsetWidth;cv.classList.add("boom");try{navigator.vibrate&&navigator.vibrate(35)}catch(_){}}
-    if(reduce||!raf){while(!boomStep(b)){}for(let k=0;k<90;k++)step();draw()}else booms.push(b)}   // with motion off the blast plays out at once
+    if(reduce||!raf){while(!boomStep(b)){}for(let k=0;k<90;k++)step();draw()}else booms.push(b)}   // with motion off the clearing happens at once
   cv.addEventListener("animationend",()=>cv.classList.remove("boom"));
   cv.addEventListener("pointermove",e=>{if(on&&e.buttons!==0||on&&e.pointerType==="mouse")paint(e)});cv.addEventListener("pointerdown",burst);
   addEventListener("resize",()=>{if(on){clearTimeout(tm);tm=setTimeout(()=>{   // restart only on a real size change; phone address bars nudge the height a little
