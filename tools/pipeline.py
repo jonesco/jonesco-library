@@ -80,7 +80,7 @@ def _add_variable(name, data, t):
             else: skipped += 1
         except Exception: continue
     if items: return {"status": "added", "kind": "font", "item": items[-1], "items": items}
-    return {"status": "skipped", "reason": "every weight in this variable font is already in the library"} if skipped else {"status": "rejected", "reason": "variable font with no named styles"}
+    return {"status": "skipped", "variable": True, "reason": "every style in this variable font was already added from its static files"} if skipped else {"status": "rejected", "reason": "variable font with no named styles"}
 
 def _gs(src, out, r):
     tmp = tempfile.mktemp(suffix=".png")

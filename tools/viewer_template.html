@@ -491,10 +491,10 @@ async function addAll(list){
   const cnt={added:0,skipped:0,rejected:0},notes=[];
   for(let i=0;i<ok.length;i++){$("dropmsg").textContent="Adding "+(i+1)+" of "+ok.length+"…";
     const x=ok[i],r=await fetch("/api/add?name="+encodeURIComponent(x.rel),{method:"POST",body:x.file}).then(r=>r.json()).catch(()=>({status:"rejected",reason:"launcher not reachable"}));
-    cnt[r.status]=(cnt[r.status]||0)+(r.status==="added"&&r.items?r.items.length:1);
+    const key=r.variable?"covered":r.status;cnt[key]=(cnt[key]||0)+(r.status==="added"&&r.items?r.items.length:1);
     if(r.status==="added"){(r.kind==="font"?FONTS:GFX).push(...(r.items||[r.item]))}else notes.push(x.rel+": "+(r.reason||r.status))}
   refreshAll();
-  const parts=[];if(cnt.added)parts.push("Added "+cnt.added);if(cnt.skipped)parts.push(cnt.skipped+" already there");if(cnt.rejected)parts.push(cnt.rejected+" rejected");if(ignored)parts.push(ignored+" ignored (other types)");
+  const parts=[];if(cnt.added)parts.push("Added "+cnt.added);if(cnt.skipped)parts.push(cnt.skipped+" already there");if(cnt.covered)parts.push(cnt.covered+" variable "+(cnt.covered>1?"fonts":"font")+" covered by the static files");if(cnt.rejected)parts.push(cnt.rejected+" rejected");if(ignored)parts.push(ignored+" ignored (other types)");
   const m=$("dropmsg");m.textContent=(parts.join(" · ")||"Nothing added")+".";
   if(notes.length){const d=document.createElement("details"),s=document.createElement("summary"),u=document.createElement("ul");s.textContent="Details";notes.forEach(n=>{const l=document.createElement("li");l.textContent=n;u.append(l)});d.append(s,u);m.append(d)}}
 $("drop").onclick=()=>{if(SERVER)$("pick").click()};
