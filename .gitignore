@@ -1,0 +1,13 @@
+# Code only. The collection, the generated page and the licensed system fonts stay out of git.
+fonts/
+thumbs/
+previews/
+added/
+data/
+online/
+index.html
+system/
+.venv/
+__pycache__/
+tools/*.pre-*.html
+.DS_Store

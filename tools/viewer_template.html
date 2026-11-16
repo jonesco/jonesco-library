@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Jonesco.library</title>
+<link rel="icon" type="image/svg+xml" href="icons/jonesco-library.svg">
+<!-- Jonesco system 3.5.0, copied from v/3.5.0 into ./system so the library works offline. Pinned: bump only on purpose. -->
+<link rel="stylesheet" href="system/system.css">
+<link rel="stylesheet" href="system/patterns.css">
+<script>try{if(localStorage.getItem("fgl-theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<style>
+/* Library-specific layout. Everything visual comes from the system's tokens and patterns.
+   Variation, recorded here: the header is the compact 64px bar and carries the Fonts / Graphics switch as nav,
+   because this is a tool you work in, not a page you read. Art sits on newsprint, multiplied, per the principles. */
+/* Dark mode (variation): the page flips to black with white type; the header and footer stay black either way.
+   Done by swapping the system's tokens on the page and restoring them inside the header and footer, so every pattern follows. */
+:root[data-theme=dark]{--ink:#fff;--paper:#000;--newsprint:#1c1c1c;--muted:#9a9a9a;color-scheme:dark}
+[data-theme=dark] .sys-header,[data-theme=dark] .sys-footer{--ink:#000;--paper:#fff;--muted:#555}
+[data-theme=dark] .sys-footer{border-top:1px solid var(--line-dark)}
+/* in dark mode the header flips to white: black logo, black type, magenta hover (yellow is for black surfaces) */
+[data-theme=dark] .sys-header{background:var(--paper);color:var(--ink)}
+[data-theme=dark] .sys-nav button:hover,[data-theme=dark] .sys-nav button[aria-current],[data-theme=dark] .back:hover{color:var(--accent);border-bottom-color:var(--accent)}
+[data-theme=dark] .sys-header .sys-toggle__track{border-color:var(--ink);background:var(--paper)}
+[data-theme=dark] .sys-header .sys-toggle[aria-checked="true"] .sys-toggle__track{background:var(--ink)}
+[data-theme=dark] .sys-header .sys-toggle__track::after{background:var(--ink)}
+[data-theme=dark] .sys-header .sys-toggle[aria-checked="true"] .sys-toggle__track::after{background:var(--paper)}
+[data-theme=dark] .sys-header .sys-toggle:hover{color:var(--accent)}
+[data-theme=dark] .bar{border-bottom-color:var(--line-dark)}
+[data-theme=dark] .grid,[data-theme=dark] .grid>*{border-color:var(--line-dark)}
+[data-theme=dark] .artbox{border-color:var(--line-dark)}
+[data-theme=dark] .bar .sys-controls{--track:#444}
+[data-theme=dark] .sys-input::-webkit-search-cancel-button{filter:invert(1)}
+[data-theme=dark] .sys-input[type="search"]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%23fff' stroke-width='2'%3E%3Ccircle cx='6.5' cy='6.5' r='5'/%3E%3Cpath d='M10.2 10.2L15 15'/%3E%3C/svg%3E")}
+[data-theme=dark] select.sys-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23fff' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E")}
+[data-theme=dark] .th img,[data-theme=dark] .artbox img{mix-blend-mode:normal}
+[data-theme=dark] img.bw{filter:invert(1)}   /* black-and-white line art reverses out to white on black; color art is left alone */
+/* the title band matches the header: black on the light page, white on the dark page */
+:root{--hb:#000;--hf:#fff;--hm:#bbb}
+:root[data-theme=dark]{--hb:#fff;--hf:#000;--hm:#555}
+.herob{background:var(--hb);color:var(--hf)}
+body.online #drop,body.online #dropmsg,body.online .localonly{display:none}
+.hdr-r{display:flex;align-items:center;gap:28px}
+.hdr-r .sys-toggle{min-height:44px;font:700 var(--size-label)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase}
+.sys-header{--hdr:64px}
+/* the site mark beside the name, as on Jonesco.design and Jonesco.dev: a square in the site's own color (yellow here, with a black J) */
+.sys-brand .docs-mark{height:40px;filter:none}
+.sys-brand span{font-size:28px}
+.sys-nav button{background:none;border:0;border-top:3px solid transparent;border-bottom:3px solid transparent;color:inherit;cursor:pointer;
+  font:700 var(--size-label)/1.2 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;padding:5px 0 3px}
+.sys-nav button:hover,.sys-nav button[aria-current]{color:var(--highlight);border-bottom-color:var(--highlight)}
+.hero{padding-top:var(--space-section);padding-bottom:var(--space-head)}
+.hero h1{margin:0;font-size:var(--size-section)}
+.hero p{margin:8px 0 0;color:var(--hm)}
+.herorow{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+#drop{width:360px;max-width:100%;min-height:88px;padding:14px 18px;background:transparent;color:var(--hf);border:var(--thin-w) dashed var(--hf);cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:4px;transition:background var(--quick),color var(--quick)}
+#drop .sys-label{font-size:var(--size-tag)}#drop small{color:var(--hm);font-size:13px}
+#drop:hover,#drop.over{background:var(--hf);color:var(--hb);border-style:solid}#drop:hover small,#drop.over small{color:var(--hb)}
+#drop.off{cursor:default;opacity:.7}#drop.off:hover{background:transparent;color:var(--hf);border-style:dashed}#drop.off:hover small{color:var(--hm)}
+#dropmsg{max-width:360px;font-size:14px;margin-top:8px;color:var(--hm)}#dropmsg details{margin-top:4px}#dropmsg summary{cursor:pointer;color:var(--hf);font-family:var(--font-label);font-weight:700;font-size:13px;letter-spacing:var(--track-label);text-transform:uppercase}
+#dropmsg ul{margin:6px 0 0;padding-left:18px;max-height:160px;overflow:auto}
+.btns .sys-btn.warn{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.bar{position:sticky;top:64px;z-index:9;background:var(--paper);border-bottom:var(--thin)}
+.bar .sys-wrap{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding-top:14px;padding-bottom:14px}
+.bar .sys-input{width:auto}
+.bar [type=search]{width:240px}.bar #sample{flex:1;min-width:220px}
+select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;background-position:right 12px center;background-size:12px 8px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E")}
+.bar .sys-controls{display:flex;align-items:center;gap:10px;background:none;color:var(--ink);padding:0;border:0;--track:#c9c7c1}.bar .sys-controls label{font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase}
+.gc{display:none;flex-wrap:wrap;gap:12px;align-items:center}
+.grid{display:grid;gap:0;background:var(--paper);border-left:var(--thin)}
+.grid>*{border-right:var(--thin);border-bottom:var(--thin)}
+#list{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+.card{background:var(--paper);padding:20px;cursor:pointer;min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
+.sp{font-size:var(--sz,36px);line-height:1.15;overflow-wrap:anywhere;margin-bottom:14px;min-height:1.2em}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.nm{margin:0;font-size:16px;transition:color var(--quick)}
+.mt{margin-top:2px;font-size:13px;color:var(--muted)}
+.card:hover .nm,.gc2:hover .nm{color:var(--accent)}
+#glist{grid-template-columns:repeat(auto-fill,minmax(176px,1fr))}
+.gc2{background:var(--paper);cursor:pointer;padding:12px;display:flex;flex-direction:column;gap:10px}
+.th{height:140px;display:flex;align-items:center;justify-content:center;background:var(--paper)}
+.th img{max-width:100%;max-height:140px;mix-blend-mode:multiply}
+.np{color:var(--muted);font-size:13px}
+.gc2 .nm{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gc2 .mt{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:-6px}
+.loading{padding:var(--space-section) 0;display:flex;flex-direction:column;gap:16px;align-items:flex-start}
+.loading .bar{width:240px;height:4px;background:var(--newsprint);position:relative;overflow:hidden}
+.loading .bar::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;background:var(--accent);animation:ld 1s ease-in-out infinite alternate}
+@keyframes ld{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+@media (prefers-reduced-motion:reduce){.loading .bar::after{animation:none;width:100%}}
+.empty{padding:56px 0;color:var(--muted)}
+#more{padding:32px 0;text-align:center}
+.dlg{position:fixed;inset:0;background:var(--paper);overflow:auto;display:none;z-index:20}.dlg.on{display:block}
+.dlg .sys-header{position:sticky;top:0}
+.back{background:none;border:0;color:inherit;cursor:pointer;font:700 var(--size-label)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase}
+.back:hover{color:var(--highlight)}
+.dlg h2{margin:var(--space-section) 0 0;font-size:var(--size-section)}
+.dlg .meta{margin:8px 0 24px;color:var(--muted)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:var(--space-head)}.btns .note{color:var(--muted);font-size:14px;margin-left:8px}
+.big{font-size:72px;line-height:1.1;overflow-wrap:anywhere;padding:24px 0 32px;border-top:var(--rule);outline:none}
+#grid{grid-template-columns:repeat(auto-fill,minmax(72px,1fr));border-top:var(--thin);margin-bottom:var(--space-section)}
+#grid div{background:var(--paper);font-size:30px;text-align:center;padding:12px 0}
+.artbox{background:var(--paper);border:var(--thin);padding:24px;margin-bottom:var(--space-section);display:flex;justify-content:center}
+.artbox img{max-width:100%;max-height:78vh;object-fit:contain;mix-blend-mode:multiply}
+@media (max-width:700px){.bar [type=search]{width:100%}.bar{position:static}#list{grid-template-columns:1fr}.big{font-size:44px}}
+</style></head><body>
+<header class="sys-header"><div class="sys-wrap sys-bar">
+  <a class="sys-brand" href="#"><img class="docs-mark" src="icons/jonesco-library.svg" alt=""><span>Jonesco.library</span></a>
+  <div class="hdr-r"><nav class="sys-nav"><button id="tf" aria-current="page">Fonts</button><button id="tg">Graphics</button></nav>
+  <button class="sys-toggle" type="button" role="switch" aria-checked="false" id="theme"><span class="sys-toggle__track" aria-hidden="true"></span>Dark</button></div>
+</div></header>
+
+<div class="herob"><div class="sys-wrap hero"><div class="herorow"><div><h1 class="sys-display" id="hero">Fonts</h1><p class="sys-label" id="sub"></p></div>
+  <div><div id="drop" class="off" role="button" tabindex="0" aria-label="Add fonts or graphics"><span class="sys-label" id="droplbl">Drop fonts, graphics or folders</span><small id="dropsm">Open with “Open Library.command” to add files</small></div>
+  <div id="dropmsg" aria-live="polite"></div><input type="file" id="pick" multiple hidden></div></div></div></div>
+
+<div class="bar"><div class="sys-wrap">
+  <span class="fc" style="display:contents">
+    <input class="sys-input" id="q" placeholder="Search by name" type="search" aria-label="Search fonts">
+    <select class="sys-input" id="type" aria-label="Kind"><option value="">Any kind</option><option value="script">Script and hand</option><option value="mono">Monospace</option></select>
+    <select class="sys-input" id="comp" aria-label="Completeness"><option value="">Complete and incomplete</option><option value="c">Complete only</option><option value="i">Incomplete only</option></select>
+    <input class="sys-input" id="sample" value="The quick brown fox jumps over the lazy dog 0123456789" aria-label="Sample text">
+    <div class="sys-controls"><label for="size">Size</label><input type="range" class="sys-slider" id="size" min="14" max="96" value="36"></div>
+  </span>
+  <span class="gc">
+    <input class="sys-input" id="gq" placeholder="Search name or folder" type="search" aria-label="Search graphics">
+    <select class="sys-input" id="gtop" aria-label="Collection"><option value="">All collections</option></select>
+    <select class="sys-input" id="gext" aria-label="File type"><option value="">All types</option></select>
+    <button class="sys-toggle" type="button" role="switch" aria-checked="true" id="gprev"><span class="sys-toggle__track" aria-hidden="true"></span>Only with preview</button>
+  </span>
+</div></div>
+
+<main class="sys-wrap"><div id="loading" class="loading" role="status" aria-live="polite"><span class="sys-label">Loading the library</span><span class="bar" aria-hidden="true"></span></div>
+<div id="list" class="grid"></div><div id="glist" class="grid" style="display:none"></div>
+<div id="fsent" style="height:1px"></div>
+<div id="more" style="display:none"><button class="sys-btn sys-btn--md sys-btn--ghost" id="morebtn">Show more</button></div></main>
+
+<section id="gdlg" class="dlg"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="gclose">← Back</button></div></div>
+  <div class="sys-wrap"><h2 class="sys-display" id="gn"></h2><p class="meta sys-label" id="gm"></p>
+  <div class="btns"><button class="sys-btn sys-btn--md" id="gfin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="gcp">Copy path</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="grm">Remove from library</button><span class="note" id="gnote"></span></div>
+  <div class="artbox"><img id="gimg" alt=""></div></div></section>
+
+<section id="dlg" class="dlg"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="close">← Back</button></div></div>
+  <div class="sys-wrap"><h2 class="sys-display" id="dn"></h2><p class="meta sys-label" id="dm"></p>
+  <div class="btns"><button class="sys-btn sys-btn--md" id="fin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="fino">Show original</button>
+    <button class="sys-btn sys-btn--md sys-btn--ghost" id="cpn">Copy name</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="cpp">Copy file path</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="rm">Remove from library</button><span class="note" id="note"></span></div>
+  <div class="big" id="dbig" contenteditable spellcheck="false"></div><div id="grid" class="grid"></div></div></section>
+
+<footer class="sys-footer"><div class="sys-wrap"><small>Personal font and graphics library. For private use only.</small></div></footer>
+
+<script>
+let FONTS=/*DATA*/[];
+const LIB="/Users/Wes/Developer/fonts-and-graphics-library/";
+// Online mode: read-only, files download instead of revealing in Finder. Add ?online to preview it locally.
+const ONLINE=/*ONLINE*/false||new URLSearchParams(location.search).has("online")||(/^https?:$/.test(location.protocol)&&!["127.0.0.1","localhost"].includes(location.hostname));
+const LITE=/*LITE*/false;   // browse-only gallery: web-only font copies, no downloads
+if(ONLINE)document.body.classList.add("online");
+const enc=p=>p.split("/").map(encodeURIComponent).join("/");
+function dl(url,name){const a=document.createElement("a");a.href=url;a.download=name;document.body.append(a);a.click();a.remove()}
+function copyText(t){try{if(navigator.clipboard&&window.isSecureContext)return copyText(t)}catch(e){}
+  const x=document.createElement("textarea");x.value=t;x.style.cssText="position:fixed;opacity:0";document.body.append(x);x.select();try{document.execCommand("copy")}catch(e){}x.remove();return Promise.resolve()}
+function reveal(abs,note){fetch("/reveal?p="+encodeURIComponent(abs)).then(r=>{if(!r.ok)throw 0;note.textContent=""}).catch(()=>{copyText(abs);note.textContent="Path copied. For one-click Show in Finder, open the library with “Open Library.command”."})}
+const $=id=>document.getElementById(id),list=$("list");
+const fmt=n=>n.toLocaleString("en-US");
+let onGfx=false;
+function setSub(shown,total,word){$("sub").textContent=shown===total?fmt(total)+" "+word:fmt(shown)+" of "+fmt(total)+" "+word}
+const loaded=new Set();
+function load(f){if(loaded.has(f.f))return;loaded.add(f.f);
+  new FontFace("F_"+f.f,`url("${encodeURI(f.file)}")`).load().then(x=>{document.fonts.add(x)}).catch(()=>{})}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){load(FONTS[e.target.dataset.i]);io.unobserve(e.target)}}),{rootMargin:"400px"});
+let fRows=[],fShown=0;const FPAGE=60;
+function addFonts(){
+  fRows.slice(fShown,fShown+FPAGE).forEach(([f,i])=>{const d=document.createElement("div");d.className="card";d.dataset.i=i;
+    d.innerHTML=`<div class="sp" style="font-family:'F_${f.f}',sans-serif"></div><div class="row"><h3 class="nm sys-title"></h3></div>`;
+    const sp=d.querySelector(".sp");if(f.p){sp.textContent=f.p.slice(0,36);sp.dataset.p=1}else sp.textContent=$("sample").value;d.querySelector(".nm").textContent=f.n;if(f.x){const t=document.createElement("span");t.className="sys-tag sys-tag--light";t.textContent="Incomplete";t.title="Missing: "+f.x;d.querySelector(".row").append(t)}
+    d.onclick=()=>open(f);list.append(d);io.observe(d)});
+  fShown=Math.min(fShown+FPAGE,fRows.length);
+  setTimeout(moreFonts,0)}
+function moreFonts(){   // keep adding batches while the end of the list is within ~1500px of the viewport
+  if(!onGfx&&$("dlg").classList.contains("on")===false&&fShown<fRows.length&&innerHeight+scrollY>document.documentElement.scrollHeight-1500)addFonts()}
+addEventListener("scroll",moreFonts,{passive:true});addEventListener("resize",moreFonts);
+function render(){
+  const q=$("q").value.toLowerCase(),t=$("type").value,cp=$("comp").value;
+  const rows=FONTS.map((f,i)=>[f,i]).filter(([f])=>(!q||f.n.toLowerCase().includes(q))&&(!t||f.t===t)&&(!cp||(cp==="i")===!!f.x));
+  list.style.setProperty("--sz",$("size").value+"px");
+  list.innerHTML=rows.length?"":'<div class="empty">No fonts match.</div>';
+  fRows=rows;fShown=0;$("loading").style.display="none";addFonts();
+  if(!onGfx)setSub(rows.length,FONTS.length,"fonts");
+}
+function open(f){load(f);const ff=`'F_${f.f}',sans-serif`;
+  $("dn").textContent=f.n;$("dm").textContent=f.g+" glyphs"+(f.x?" · incomplete, missing "+[...f.x].join(" "):"");
+  const big=$("dbig");big.style.fontFamily=ff;big.textContent=f.p?f.p.slice(0,60):$("sample").value;
+  const g=$("grid");g.innerHTML="";g.style.fontFamily=ff;
+  const cps=f.p?[...f.p].map(c=>c.codePointAt(0)):Array.from({length:0x250-33},(_,i)=>i+33).filter(u=>(u<127||u>160)&&(!LITE||u<=0xFF));
+  cps.forEach(u=>{const d=document.createElement("div");d.textContent=String.fromCodePoint(u);g.append(d)});
+  $("fin").textContent=ONLINE?"Download":"Show in Finder";
+  $("fin").onclick=ONLINE?()=>dl(enc(f.file),f.f+f.file.slice(f.file.lastIndexOf("."))):()=>reveal(LIB+f.file,$("note"));
+  $("fin").style.display=LITE?"none":"";$("fino").onclick=()=>reveal(f.s,$("note"));$("fino").style.display=(!ONLINE&&f.s)?"":"none";$("cpp").style.display=$("rm").style.display=ONLINE?"none":"";$("note").textContent="";
+  armRemove($("rm"),"font",f.file,f);$("cpn").onclick=()=>copyText(f.n);$("cpp").onclick=()=>copyText(f.file);
+  $("dlg").classList.add("on")}
+$("close").onclick=()=>$("dlg").classList.remove("on");
+["q","type","comp","size"].forEach(i=>$(i).oninput=render);
+$("sample").oninput=()=>document.querySelectorAll(".sp:not([data-p])").forEach(s=>s.textContent=$("sample").value);
+render();
+// ---- Graphics tab
+let GFX=/*GFX*/[];const BASE="/Users/Wes/Developer/_Fonts and Graphics/",PAGE=300;let gShown=0,gRows=[];
+function gTops(){const cur=$("gtop").value,tops=[...new Set(GFX.map(g=>g.top))].sort();$("gtop").innerHTML='<option value="">All collections</option>'+tops.map(t=>`<option value="${t.replace(/"/g,"&quot;")}">${t}</option>`).join("");$("gtop").value=tops.includes(cur)?cur:""}
+gTops();
+function gExts(){ // only file types that have items under the current collection + preview settings
+  const t=$("gtop").value,pv=$("gprev").getAttribute("aria-checked")==="true",cur=$("gext").value;
+  const have=[...new Set(GFX.filter(g=>(!t||g.top===t)&&(!pv||g.t)).map(g=>g.ext))].sort();
+  $("gext").innerHTML='<option value="">All types</option>'+have.map(e=>`<option value="${e}">${e}</option>`).join("");
+  $("gext").value=have.includes(cur)?cur:""}
+gExts();
+function gFilter(){const q=$("gq").value.toLowerCase(),t=$("gtop").value,e=$("gext").value,pv=$("gprev").getAttribute("aria-checked")==="true";
+  gRows=GFX.filter(g=>(!q||g.p.toLowerCase().includes(q))&&(!t||g.top===t)&&(!e||g.ext===e)&&(!pv||g.t));
+  $("glist").innerHTML="";gShown=0;gMore();if(onGfx)setSub(gRows.length,GFX.length,"graphics")}
+function gMore(){const g=$("glist");gRows.slice(gShown,gShown+PAGE).forEach(r=>{const d=document.createElement("div");d.className="gc2";
+  const th=document.createElement("div");th.className="th";
+  if(r.t){const im=new Image();im.loading="lazy";im.src=r.t;im.alt=r.n;if(r.bw)im.className="bw";th.append(im)}else th.innerHTML='<span class="np">No preview</span>';
+  const a=document.createElement("h3");a.className="nm sys-title";a.textContent=r.n;const b=document.createElement("div");b.className="mt";b.textContent=r.c.replace(/^Graphic Items\//,"");b.title=r.c;
+  d.append(th,a,b);d.onclick=()=>gOpen(r);g.append(d)});gShown=Math.min(gShown+PAGE,gRows.length);
+  $("more").style.display=onGfx&&gShown<gRows.length?"block":"none";$("morebtn").textContent="Show more ("+fmt(gRows.length-gShown)+" left)"}
+function gOpen(r){$("gn").textContent=r.n;$("gm").textContent=r.c+" · ."+r.ext;$("gimg").src=r.v||r.t||"";$("gimg").className=r.bw?"bw":"";$("gimg").parentNode.style.display=(r.v||r.t)?"":"none";
+  const ap=r.a||BASE+r.p,hasOrig=!r.z;
+  $("gfin").textContent=ONLINE?(hasOrig?"Download original":"Download preview"):"Show in Finder";
+  $("gfin").onclick=ONLINE?()=>{const nm=r.n+"."+(hasOrig?r.ext:(r.v||r.t).split(".").pop());dl(enc(hasOrig?"originals/"+r.p:(r.v||r.t)),nm)}:()=>reveal(ap,$("gnote"));
+  $("gcp").style.display=$("grm").style.display=ONLINE?"none":"";$("gfin").style.display=LITE?"none":"";$("gnote").textContent="";$("gcp").onclick=()=>copyText(ap);armRemove($("grm"),"gfx",r.p,r);$("gdlg").className="dlg on"}
+$("gclose").onclick=()=>$("gdlg").classList.remove("on");$("morebtn").onclick=gMore;
+$("gprev").onclick=()=>{$("gprev").setAttribute("aria-checked",$("gprev").getAttribute("aria-checked")!=="true");gExts();gFilter()};
+["gq","gext"].forEach(i=>$(i).oninput=gFilter);$("gtop").oninput=()=>{gExts();gFilter()};
+function tab(g){onGfx=g;$("tf").toggleAttribute("aria-current",!g);$("tg").toggleAttribute("aria-current",g);
+  $("tf").setAttribute("aria-pressed",!g);$("hero").textContent=g?"Graphics":"Fonts";
+  $("list").style.display=g?"none":"";$("glist").style.display=g?"":"none";document.querySelector(".fc").style.display=g?"none":"contents";
+  document.querySelector(".gc").style.display=g?"flex":"none";$("more").style.display=g&&gShown<gRows.length?"block":"none";
+  if(g){if(!gRows.length)gFilter();else setSub(gRows.length,GFX.length,"graphics")}else render()}
+$("tf").onclick=()=>tab(false);$("tg").onclick=()=>tab(true);
+addEventListener("keydown",e=>{if(e.key==="Escape"){$("dlg").classList.remove("on");$("gdlg").classList.remove("on")}});
+
+// ---- Theme: light or dark, remembered on this machine
+function setTheme(d){document.documentElement.dataset.theme=d?"dark":"light";$("theme").setAttribute("aria-checked",d);try{localStorage.setItem("fgl-theme",d?"dark":"light")}catch(e){}}
+$("theme").setAttribute("aria-checked",document.documentElement.dataset.theme==="dark");
+$("theme").onclick=()=>setTheme($("theme").getAttribute("aria-checked")!=="true");
+
+// ---- Drop box, add and remove (needs the launcher; plain file:// shows it switched off)
+let SERVER=false;
+const OKEXT=new Set(["ttf","otf","png","jpg","jpeg","gif","tif","tiff","psd","pdf","eps","ai","svg"]);
+function refreshAll(){FONTS.sort((a,b)=>a.n.toLowerCase()<b.n.toLowerCase()?-1:1);GFX.sort((a,b)=>a.p<b.p?-1:1);gTops();gExts();render();if(onGfx)gFilter()}
+function merge(st){const rf=new Set(st.removed.fonts),rg=new Set(st.removed.gfx),hf=new Set(FONTS.map(f=>f.file)),hg=new Set(GFX.map(g=>g.p));
+  st.fonts.forEach(f=>{if(!hf.has(f.file))FONTS.push(f)});st.gfx.forEach(g=>{if(!hg.has(g.p))GFX.push(g)});
+  FONTS=FONTS.filter(f=>!rf.has(f.file));GFX=GFX.filter(g=>!rg.has(g.p));refreshAll()}
+function dropState(on){SERVER=on;$("drop").classList.toggle("off",!on);
+  $("dropsm").textContent=on?"or click to choose files":"Open with “Open Library.command” to add files"}
+if(!ONLINE)fetch("/api/state").then(r=>r.ok?r.json():null).then(st=>{if(st){dropState(true);merge(st)}}).catch(()=>{});
+async function walk(en,path){
+  if(en.isFile)return[await new Promise(r=>en.file(f=>r({file:f,rel:path+en.name}),()=>r(null)))].filter(Boolean);
+  const rd=en.createReader();let all=[];for(;;){const b=await new Promise(r=>rd.readEntries(r,()=>r([])));if(!b.length)break;all.push(...b)}
+  return(await Promise.all(all.map(e=>walk(e,path+en.name+"/")))).flat()}
+async function addAll(list){
+  const ok=list.filter(x=>!x.file.name.startsWith(".")&&OKEXT.has(x.file.name.split(".").pop().toLowerCase())),ignored=list.length-ok.length;
+  if(!ok.length){$("dropmsg").textContent="Nothing to add: no fonts or graphics of a supported type.";return}
+  const cnt={added:0,skipped:0,rejected:0},notes=[];
+  for(let i=0;i<ok.length;i++){$("dropmsg").textContent="Adding "+(i+1)+" of "+ok.length+"…";
+    const x=ok[i],r=await fetch("/api/add?name="+encodeURIComponent(x.rel),{method:"POST",body:x.file}).then(r=>r.json()).catch(()=>({status:"rejected",reason:"launcher not reachable"}));
+    cnt[r.status]=(cnt[r.status]||0)+1;
+    if(r.status==="added"){(r.kind==="font"?FONTS:GFX).push(r.item)}else notes.push(x.rel+": "+(r.reason||r.status))}
+  refreshAll();
+  const parts=[];if(cnt.added)parts.push("Added "+cnt.added);if(cnt.skipped)parts.push(cnt.skipped+" already there");if(cnt.rejected)parts.push(cnt.rejected+" rejected");if(ignored)parts.push(ignored+" ignored (other types)");
+  const m=$("dropmsg");m.textContent=(parts.join(" · ")||"Nothing added")+".";
+  if(notes.length){const d=document.createElement("details"),s=document.createElement("summary"),u=document.createElement("ul");s.textContent="Details";notes.forEach(n=>{const l=document.createElement("li");l.textContent=n;u.append(l)});d.append(s,u);m.append(d)}}
+$("drop").onclick=()=>{if(SERVER)$("pick").click()};
+$("drop").onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&SERVER){e.preventDefault();$("pick").click()}};
+$("pick").onchange=()=>{const l=[...$("pick").files].map(f=>({file:f,rel:f.name}));$("pick").value="";if(l.length)addAll(l)};
+let dragN=0;
+addEventListener("dragenter",e=>{e.preventDefault();dragN++;if(SERVER)$("drop").classList.add("over")});
+addEventListener("dragleave",e=>{dragN=Math.max(0,dragN-1);if(!dragN)$("drop").classList.remove("over")});
+addEventListener("dragover",e=>e.preventDefault());
+addEventListener("drop",async e=>{e.preventDefault();dragN=0;$("drop").classList.remove("over");
+  if(!SERVER){$("dropmsg").textContent="Open the library with “Open Library.command” to add files.";return}
+  const ens=[...e.dataTransfer.items].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);   // read entries before any await
+  const list=(await Promise.all(ens.map(en=>walk(en,"")))).flat();addAll(list)});
+function armRemove(btn,kind,key,item){btn.textContent="Remove from library";btn.classList.remove("warn");const note=btn===$("rm")?$("note"):$("gnote");
+  btn.onclick=async()=>{
+    if(!SERVER){note.textContent="Open the library with “Open Library.command” to remove items.";return}
+    if(!btn.classList.contains("warn")){btn.classList.add("warn");btn.textContent="Click again to remove";return}
+    const r=await fetch("/api/remove",{method:"POST",body:JSON.stringify({kind,key})}).then(r=>r.json()).catch(()=>null);
+    if(!r||r.status!=="removed"){note.textContent="Could not remove.";return}
+    if(kind==="font")FONTS=FONTS.filter(f=>f.file!==key);else GFX=GFX.filter(g=>g.p!==key);
+    $("dlg").classList.remove("on");$("gdlg").classList.remove("on");refreshAll()}}
+</script></body></html>
