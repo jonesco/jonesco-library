@@ -37,7 +37,12 @@ class H(http.server.SimpleHTTPRequestHandler):
         s._json(404, {})
     def log_message(s, *a): pass
 class S(socketserver.ThreadingMixIn, socketserver.TCPServer): allow_reuse_address = True; daemon_threads = True
-with S(("127.0.0.1", PORT), H) as srv:
+try: srv = S(("127.0.0.1", PORT), H)
+except OSError:                      # the library is already being served (another window is open): just show it
+    print("The library is already running at http://127.0.0.1:%d - opening it." % PORT)
+    if "--no-open" not in sys.argv: webbrowser.open("http://127.0.0.1:%d/index.html" % PORT)
+    sys.exit(0)
+with srv:
     print("Fonts and Graphics Library running at http://127.0.0.1:%d  (close this window to stop)" % PORT)
     if "--no-open" not in sys.argv: webbrowser.open("http://127.0.0.1:%d/index.html" % PORT)
     srv.serve_forever()
