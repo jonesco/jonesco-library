@@ -151,6 +151,10 @@ main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first ro
 .big{font-size:72px;line-height:1.1;overflow-wrap:anywhere;padding:24px 0 16px;border-top:var(--rule);outline:none;cursor:text;min-height:1.1em}
 .big:empty::before{content:"Type your own text";color:var(--muted);font-family:var(--font-body)}   /* shown when the text is cleared */
 .big:focus{box-shadow:0 3px 0 var(--accent)}   /* the magenta underline says "you are typing here" (the page is white here in light mode) */
+/* Dark mode makes the header, title band and filter bar white: hovers and focus there are magenta, since yellow disappears on white */
+:root[data-theme=dark] body>.sys-section-nav .sys-nav a:hover,:root[data-theme=dark] .sys-header .sys-toggle:hover,:root[data-theme=dark] .sys-header .back:hover,:root[data-theme=dark] .sys-header .sys-icon-btn:hover{color:var(--accent)}
+:root[data-theme=dark] body>.sys-section-nav .sys-nav a:hover{border-bottom-color:var(--accent)}
+:root[data-theme=dark] .bar .sys-input:focus{border-color:var(--accent)}
 :root[data-theme=dark] .big:focus{box-shadow:0 3px 0 var(--highlight)}   /* yellow on the black page in dark mode */
 .bighint{margin:0 0 24px;color:var(--muted)}
 #grid{grid-template-columns:repeat(auto-fill,minmax(72px,1fr));border-top:var(--thin);margin-bottom:var(--space-section)}
