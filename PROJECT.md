@@ -1,6 +1,6 @@
 # Jonesco.library
 
-A private library of fonts and graphics collected since college, with a viewer to browse, search and add to it. Personal use only: it holds licensed commercial fonts, so it is never public. Not a design system (that is design.jonesco.com) and not an app (see dev.jonesco.com); it is the raw material those draw from.
+A private library of fonts and graphics, with a viewer to browse, search and add to it. Personal use only: it holds licensed commercial fonts, so it is never public. Not a design system (that is design.jonesco.com) and not an app (see dev.jonesco.com); it is the raw material those draw from.
 
 ## The library
 - **Fonts:** about 13,000 OpenType fonts, converted from classic Mac Type 1 and TrueType suitcases, in one flat `fonts/` folder.

@@ -65,8 +65,8 @@ html.home{--foot:var(--highlight)}
 body.online #drop,body.online #dropmsg,body.online .localonly{display:none}
 /* Overview: a full-screen reaction-diffusion canvas with two links. Hides everything else while on the home view. */
 #home{display:none;position:relative;height:calc(100vh - 64px);height:calc(100dvh - 64px);min-height:440px;background:var(--highlight);overflow:hidden}
-body.home #home{display:block}
-body.home .herob,body.home .sys-section-nav,body.home .bar,body.home main,body.home .sys-footer{display:none}
+.home #home{display:block}
+.home .herob,.home .sys-section-nav,.home .bar,.home main,.home .sys-footer{display:none}
 .sys-header .sys-nav{display:none}   /* no page links in the header: the overview and the switch under each title do that job */
 .herob{--ink:var(--hf);--paper:var(--hb);--thin:var(--thin-w) solid var(--hf)}   /* controls inside the band follow the band's colors; --thin is resolved at :root, so the band restates it or the switcher's outline disappears */
 /* Fonts/Graphics: the system's section nav (as on Style specimens), laid on the band: same color as the band, current link underlined */
@@ -76,7 +76,7 @@ body>.sys-section-nav .sys-nav{display:flex}
 #rd{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 .homewrap{position:absolute;inset:0;display:flex;align-items:flex-end;pointer-events:none}
 .homepanel{pointer-events:auto;width:min(460px,100%);background:var(--paper);border:var(--rule);padding:28px;margin-bottom:var(--gutter)}
-.homepanel h1{margin:0;font-size:var(--size-section)}
+.homepanel h1{margin:0;font-size:var(--size-section);padding-bottom:16px}
 .homepanel p{margin:8px 0 24px;color:var(--muted)}
 .homelinks{display:grid;gap:8px}.homelinks .sys-btn{width:100%}
 .hdr-r{display:flex;align-items:center;gap:28px}
@@ -178,7 +178,7 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
   .chip{height:44px}.fsel{width:100%}.fsel .sys-input{flex:1 1 140px;min-width:0;height:44px}#sortrow{margin-left:0;width:100%}
 }
 @media (max-width:349px){.sys-brand span{display:none}}
-</style></head><body>
+</style><script>if(!location.hash.slice(1))document.documentElement.classList.add("home")</script></head><body>
 <header class="sys-header"><div class="sys-wrap sys-bar">
   <a class="sys-brand" href="#"><img class="docs-mark" src="icons/jonesco-library.svg" alt=""><span>Jonesco.library</span></a>
   <div class="hdr-r"><nav class="sys-nav"><button id="tf">Fonts</button><button id="tg">Graphics</button></nav>
@@ -186,7 +186,7 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
 </div></header>
 
 <section id="home" aria-label="Overview"><canvas id="rd" aria-hidden="true"></canvas>
-  <div class="sys-wrap homewrap"><div class="homepanel"><h1 class="sys-display">Fonts and graphics</h1>
+  <div class="sys-wrap homewrap"><div class="homepanel"><h1 class="sys-display">Fonts &amp; graphics</h1>
     <div class="homelinks"><a class="sys-btn" href="#fonts">Fonts <span class="plus">→</span></a><a class="sys-btn" href="#graphics">Graphics <span class="plus">→</span></a></div></div></div></section>
 <div class="herob"><div class="sys-wrap hero"><div class="herorow"><div><h1 class="sys-display" id="hero">Fonts</h1><p class="sys-label" id="sub"></p>
 </div>
