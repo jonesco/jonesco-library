@@ -73,6 +73,7 @@ if __name__ == "__main__":
     h = h.replace('href="system/system.css"', 'href="%ssystem.css"' % PIN).replace('href="system/patterns.css"', 'href="%spatterns.css"' % PIN)
     h = h.replace("/*ONLINE*/false", "true").replace("/*LITE*/false", "true")
     open(os.path.join(OUT, "index.html"), "w").write(h)
+    shutil.copy(os.path.join(ROOT, "manifest.webmanifest"), os.path.join(OUT, "manifest.webmanifest"))
     shutil.rmtree(os.path.join(OUT, "icons"), ignore_errors=True); shutil.copytree(os.path.join(ROOT, "icons"), os.path.join(OUT, "icons"))
     open(os.path.join(OUT, "robots.txt"), "w").write("User-agent: *\nDisallow: /\n"); open(os.path.join(OUT, ".nojekyll"), "w").write("")
     open(os.path.join(OUT, "CNAME"), "w").write("library.jonesco.com\n")

@@ -1,0 +1,31 @@
+<!doctype html><meta charset="utf-8"><title>og</title>
+<!-- Renders the link-preview image (1200x630): the overview's reaction-diffusion field in black on yellow, with the mark and name.
+     Regenerate: Chrome headless --window-size=1200,630 --screenshot=icons/og.png tools/og.html  (open from the library root so the paths resolve) -->
+<style>
+@font-face{font-family:Cond;src:url(../system/fonts/TradeGothic-BoldCondTwenty.woff2);font-weight:700}
+@font-face{font-family:Lab;src:url(../system/fonts/TradeGothic-BoldTwo.woff2);font-weight:700}
+html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#ffe500}
+canvas{position:absolute;inset:0}
+.panel{position:absolute;left:64px;bottom:64px;width:max-content;max-width:1072px;box-sizing:border-box;background:#fff;border:6px solid #000;padding:36px 40px 38px}
+.row{display:flex;align-items:center;gap:26px}.row img{width:104px;height:104px;display:block}
+.row b{font:700 96px/0.95 Cond;letter-spacing:-.01em;text-transform:uppercase;color:#000}
+.sub{white-space:nowrap;margin-top:24px;font:700 25px/1 Lab;letter-spacing:.06em;text-transform:uppercase;color:#555}
+</style>
+<canvas id="c" width="1200" height="630"></canvas>
+<div class="panel"><div class="row"><img src="../icons/jonesco-library.svg" alt=""><b>Jonesco.library</b></div><div class="sub">Fonts and graphics, collected since college</div></div>
+<script>
+const CELL=1.9,W=Math.ceil(1200/CELL),H=Math.ceil(630/CELL),n=W*H,F=.0545,K=.062,DU=.5,DV=.25;
+let u=new Float32Array(n).fill(1),v=new Float32Array(n),u2=new Float32Array(n),v2=new Float32Array(n);
+let s=1234567;const rnd=()=>(s=(s*1664525+1013904223)>>>0)/4294967296;               // seeded: the same image every time
+function seed(cx,cy,r){for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(dx*dx+dy*dy>r*r)continue;const i=((cy+dy+H)%H)*W+(cx+dx+W)%W;u[i]=.5;v[i]=1}}
+for(let k=0;k<n/800;k++)seed(rnd()*W|0,rnd()*H|0,2+(rnd()*2|0));
+function step(){for(let y=0;y<H;y++){const yu=(y?y-1:H-1)*W,yd=(y<H-1?y+1:0)*W,yc=y*W;for(let x=0;x<W;x++){const xl=x?x-1:W-1,xr=x<W-1?x+1:0,i=yc+x,a=u[i],b=v[i];
+ const lu=-a+.2*(u[yc+xl]+u[yc+xr]+u[yu+x]+u[yd+x])+.05*(u[yu+xl]+u[yu+xr]+u[yd+xl]+u[yd+xr]),lv=-b+.2*(v[yc+xl]+v[yc+xr]+v[yu+x]+v[yd+x])+.05*(v[yu+xl]+v[yu+xr]+v[yd+xl]+v[yd+xr]),r=a*b*b;
+ u2[i]=a+DU*lu-r+F*(1-a);v2[i]=b+DV*lv+r-(F+K)*b}}let t=u;u=u2;u2=t;t=v;v=v2;v2=t}
+for(let k=0;k<3200;k++)step();
+const ctx=document.getElementById("c").getContext("2d"),img=ctx.createImageData(1200,630),d=img.data,sm=(a,b,x)=>{x=(x-a)/(b-a);x=x<0?0:x>1?1:x;return x*x*(3-2*x)};
+for(let y=0;y<630;y++){const fy=y/CELL-.5,y0=Math.max(0,Math.min(H-2,Math.floor(fy))),ty=fy-y0;for(let x=0;x<1200;x++){const fx=x/CELL-.5,x0=Math.max(0,Math.min(W-2,Math.floor(fx))),tx=fx-x0,i=y0*W+x0;
+ const val=(v[i]*(1-tx)+v[i+1]*tx)*(1-ty)+(v[i+W]*(1-tx)+v[i+W+1]*tx)*ty,sv=sm(.48-.02,.48+.02,val*3.2),j=(y*1200+x)*4;
+ d[j]=255*(1-sv);d[j+1]=229*(1-sv);d[j+2]=0;d[j+3]=255}}
+ctx.putImageData(img,0,0);
+</script>
