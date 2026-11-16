@@ -32,6 +32,17 @@ def shape(t, cm):
         if contours != 1: return None
         return "n" if segs <= 8 else "s" if 10 <= segs <= 40 else None
     except Exception: return None
+def proportion(t, cm):
+    """Ink width of a capital O over cap height. Old Mac fonts all claim 'normal width' in their own data, so measure it:
+    in this library condensed faces sit near 0.67, normal near 0.97, wide near 1.18 (cut-offs .67 and 1.15)."""
+    try:
+        from fontTools.pens.boundsPen import BoundsPen
+        if 0x4F not in cm or 0x48 not in cm: return None
+        gs = t.getGlyphSet(); h = BoundsPen(gs); gs[cm[0x48]].draw(h); o = BoundsPen(gs); gs[cm[0x4F]].draw(o)
+        if not h.bounds or not o.bounds: return None
+        cap = h.bounds[3] - h.bounds[1]
+        return (o.bounds[2] - o.bounds[0]) / cap if cap > 0 else None
+    except Exception: return None
 def traits(path, name):
     t = TTFont(path, lazy=True)
     os2 = t["OS/2"] if "OS/2" in t else None; post = t["post"] if "post" in t else None
@@ -45,8 +56,11 @@ def traits(path, name):
     elif re.search(r"\blight\b", nl) and w >= 400: w = 300
     elif re.search(r"\b(black|heavy|ultra|extra ?bold|fat)\b", nl) and w < 800: w = 800
     elif re.search(r"\b(bold|semi ?bold|demi)\b", nl) and w < 600: w = 700
-    if re.search(r"\b(cond(ensed)?|narrow|compressed|compact)\b", nl): wd = min(wd, 3)
+    if re.search(r"\b(cond(ensed)?|narrow|compressed)\b", nl): wd = min(wd, 3)
     elif re.search(r"\b(extended|expanded|wide)\b", nl): wd = max(wd, 7)
+    if wd == 5 and not re.search(r"\b(cond(ensed)?|narrow|compressed|compact|extended|expanded|wide)\b", nl) and cat(name, os2, post, cm) not in ("y", "h"):
+        r = proportion(t, cm)
+        if r is not None: wd = 3 if r < .67 else 7 if r > 1.15 else 5      # trust the shape when the name and the font say nothing
     ital = bool((os2 is not None and os2.fsSelection & 1) or (post is not None and post.italicAngle) or re.search(r"italic|oblique|slanted", nl))
     has = lambda lo, hi, k: sum(1 for c in range(lo, hi + 1) if c in cm) >= k
     langs = 0
