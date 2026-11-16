@@ -33,8 +33,6 @@ class H(http.server.SimpleHTTPRequestHandler):
                 kind = "font" if os.path.splitext(name)[1].lower() in pipeline.FONT_EXT else "gfx"
                 if n > MAX[kind]: s.rfile.read(0); return s._json(200, {"status": "rejected", "reason": "file too large"})
                 return s._json(200, pipeline.add(name, s.rfile.read(n)))
-            if u.path == "/api/remove":
-                b = json.loads(s.rfile.read(n)); return s._json(200, pipeline.remove(b["kind"], b["key"]))
         except Exception as e: return s._json(200, {"status": "rejected", "reason": "error: %s" % str(e)[:80]})
         s._json(404, {})
     def log_message(s, *a): pass

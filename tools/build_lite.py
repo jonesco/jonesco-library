@@ -36,11 +36,26 @@ if __name__ == "__main__":
     h = open(os.path.join(ROOT, "index.html")).read()
     fm = re.search(r"let FONTS=(\[.*?\]);\nconst LIB", h, re.S); gm = re.search(r"let GFX=(\[.*?\]);const BASE", h, re.S)
     FONTS, GFX = json.loads(fm.group(1)), json.loads(gm.group(1))
-    shutil.rmtree(OUT, ignore_errors=True)
-    for d in ("f", "t", "p"): os.makedirs(os.path.join(OUT, d))
-    with Pool(6) as pool:
-        fr = dict(pool.imap_unordered(font, FONTS, 50)); print("fonts done", sum(1 for v in fr.values() if v), "of", len(FONTS), flush=True)
-        ir = dict(pool.imap_unordered(img, GFX, 50)); print("graphics done", len(ir), flush=True)
+    PAGE_ONLY = "--page-only" in sys.argv       # refresh index.html from the fonts and images already in docs/
+    if PAGE_ONLY:
+        ex = lambda p: os.path.exists(os.path.join(OUT, p))
+        fr = {f["file"]: ("f/%s.woff2" % os.path.splitext(os.path.basename(f["file"]))[0]) for f in FONTS}
+        fr = {k: (v if ex(v) else None) for k, v in fr.items()}
+        ir = {}
+        for g in GFX:
+            r = {}
+            for k, d in (("t", "t"), ("v", "p")):
+                if g.get(k):
+                    n = os.path.splitext(os.path.basename(g[k]))[0]
+                    for e in ("png", "jpg"):
+                        if ex("%s/%s.%s" % (d, n, e)): r[k] = "%s/%s.%s" % (d, n, e); break
+            ir[g["p"]] = r
+    else:
+        shutil.rmtree(OUT, ignore_errors=True)
+        for d in ("f", "t", "p"): os.makedirs(os.path.join(OUT, d))
+        with Pool(6) as pool:
+            fr = dict(pool.imap_unordered(font, FONTS, 50)); print("fonts done", sum(1 for v in fr.values() if v), "of", len(FONTS), flush=True)
+            ir = dict(pool.imap_unordered(img, GFX, 50)); print("graphics done", len(ir), flush=True)
     fonts = []
     for f in FONTS:
         if not fr.get(f["file"]): continue
@@ -58,7 +73,7 @@ if __name__ == "__main__":
     h = h.replace('href="system/system.css"', 'href="%ssystem.css"' % PIN).replace('href="system/patterns.css"', 'href="%spatterns.css"' % PIN)
     h = h.replace("/*ONLINE*/false", "true").replace("/*LITE*/false", "true")
     open(os.path.join(OUT, "index.html"), "w").write(h)
-    shutil.copytree(os.path.join(ROOT, "icons"), os.path.join(OUT, "icons"))
+    shutil.rmtree(os.path.join(OUT, "icons"), ignore_errors=True); shutil.copytree(os.path.join(ROOT, "icons"), os.path.join(OUT, "icons"))
     open(os.path.join(OUT, "robots.txt"), "w").write("User-agent: *\nDisallow: /\n"); open(os.path.join(OUT, ".nojekyll"), "w").write("")
     open(os.path.join(OUT, "CNAME"), "w").write("library.jonesco.com\n")
     print("docs/: %d fonts, %d graphics" % (len(fonts), len(gfx)))

@@ -136,13 +136,13 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
 
 <section id="gdlg" class="dlg"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="gclose">← Back</button></div></div>
   <div class="sys-wrap"><h2 class="sys-display" id="gn"></h2><p class="meta sys-label" id="gm"></p>
-  <div class="btns"><button class="sys-btn sys-btn--md" id="gfin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="gcp">Copy path</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="grm">Remove from library</button><span class="note" id="gnote"></span></div>
+  <div class="btns"><button class="sys-btn sys-btn--md" id="gfin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="gcp">Copy path</button><span class="note" id="gnote"></span></div>
   <div class="artbox"><img id="gimg" alt=""></div></div></section>
 
 <section id="dlg" class="dlg"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="close">← Back</button></div></div>
   <div class="sys-wrap"><h2 class="sys-display" id="dn"></h2><p class="meta sys-label" id="dm"></p>
   <div class="btns"><button class="sys-btn sys-btn--md" id="fin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="fino">Show original</button>
-    <button class="sys-btn sys-btn--md sys-btn--ghost" id="cpn">Copy name</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="cpp">Copy file path</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="rm">Remove from library</button><span class="note" id="note"></span></div>
+    <button class="sys-btn sys-btn--md sys-btn--ghost" id="cpn">Copy name</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="cpp">Copy file path</button><span class="note" id="note"></span></div>
   <div class="big" id="dbig" contenteditable spellcheck="false"></div><div id="grid" class="grid"></div></div></section>
 
 <footer class="sys-footer"><div class="sys-wrap"><small>Personal font and graphics library. For private use only.</small></div></footer>
@@ -194,8 +194,8 @@ function open(f){load(f);const ff=`'F_${f.f}',sans-serif`;
   cps.forEach(u=>{const d=document.createElement("div");d.textContent=String.fromCodePoint(u);g.append(d)});
   $("fin").textContent=ONLINE?"Download":"Show in Finder";
   $("fin").onclick=ONLINE?()=>dl(enc(f.file),f.f+f.file.slice(f.file.lastIndexOf("."))):()=>reveal(LIB+f.file,$("note"));
-  $("fin").style.display=LITE?"none":"";$("fino").onclick=()=>reveal(f.s,$("note"));$("fino").style.display=(!ONLINE&&f.s)?"":"none";$("cpp").style.display=$("rm").style.display=ONLINE?"none":"";$("note").textContent="";
-  armRemove($("rm"),"font",f.file,f);$("cpn").onclick=()=>copyText(f.n);$("cpp").onclick=()=>copyText(f.file);
+  $("fin").style.display=LITE?"none":"";$("fino").onclick=()=>reveal(f.s,$("note"));$("fino").style.display=(!ONLINE&&f.s)?"":"none";$("cpp").style.display=ONLINE?"none":"";$("note").textContent="";
+  $("cpn").onclick=()=>copyText(f.n);$("cpp").onclick=()=>copyText(f.file);
   $("dlg").classList.add("on")}
 $("close").onclick=()=>$("dlg").classList.remove("on");
 ["q","type","comp","size"].forEach(i=>$(i).oninput=render);
@@ -224,7 +224,7 @@ function gOpen(r){$("gn").textContent=r.n;$("gm").textContent=r.c+" · ."+r.ext;
   const ap=r.a||BASE+r.p,hasOrig=!r.z;
   $("gfin").textContent=ONLINE?(hasOrig?"Download original":"Download preview"):"Show in Finder";
   $("gfin").onclick=ONLINE?()=>{const nm=r.n+"."+(hasOrig?r.ext:(r.v||r.t).split(".").pop());dl(enc(hasOrig?"originals/"+r.p:(r.v||r.t)),nm)}:()=>reveal(ap,$("gnote"));
-  $("gcp").style.display=$("grm").style.display=ONLINE?"none":"";$("gfin").style.display=LITE?"none":"";$("gnote").textContent="";$("gcp").onclick=()=>copyText(ap);armRemove($("grm"),"gfx",r.p,r);$("gdlg").className="dlg on"}
+  $("gcp").style.display=ONLINE?"none":"";$("gfin").style.display=LITE?"none":"";$("gnote").textContent="";$("gcp").onclick=()=>copyText(ap);$("gdlg").className="dlg on"}
 $("gclose").onclick=()=>$("gdlg").classList.remove("on");$("morebtn").onclick=gMore;
 $("gprev").onclick=()=>{$("gprev").setAttribute("aria-checked",$("gprev").getAttribute("aria-checked")!=="true");gExts();gFilter()};
 ["gq","gext"].forEach(i=>$(i).oninput=gFilter);$("gtop").oninput=()=>{gExts();gFilter()};
@@ -278,12 +278,4 @@ addEventListener("drop",async e=>{e.preventDefault();dragN=0;$("drop").classList
   if(!SERVER){$("dropmsg").textContent="Open the library with “Open Library.command” to add files.";return}
   const ens=[...e.dataTransfer.items].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);   // read entries before any await
   const list=(await Promise.all(ens.map(en=>walk(en,"")))).flat();addAll(list)});
-function armRemove(btn,kind,key,item){btn.textContent="Remove from library";btn.classList.remove("warn");const note=btn===$("rm")?$("note"):$("gnote");
-  btn.onclick=async()=>{
-    if(!SERVER){note.textContent="Open the library with “Open Library.command” to remove items.";return}
-    if(!btn.classList.contains("warn")){btn.classList.add("warn");btn.textContent="Click again to remove";return}
-    const r=await fetch("/api/remove",{method:"POST",body:JSON.stringify({kind,key})}).then(r=>r.json()).catch(()=>null);
-    if(!r||r.status!=="removed"){note.textContent="Could not remove.";return}
-    if(kind==="font")FONTS=FONTS.filter(f=>f.file!==key);else GFX=GFX.filter(g=>g.p!==key);
-    $("dlg").classList.remove("on");$("gdlg").classList.remove("on");refreshAll()}}
 </script></body></html>
