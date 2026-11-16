@@ -275,8 +275,8 @@ const rd=(()=>{
   // filtering and thresholded with derivative-based anti-aliasing, so the edges stay sharp at any size. Falls back to a 2D canvas.
   const cv=$("rd"),reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
   const gl=cv.getContext("webgl2",{alpha:false,antialias:false}),ctx=gl?null:cv.getContext("2d",{alpha:false});
-  const F=.0545,K=.062,DU=1,DV=.5,BG=[1,.898,0],FG=[0,0,0];   // yellow field, black pattern (the brand highlight), in both themes
-  let W=0,H=0,u,v,u2,v2,u8,img,raf=0,on=false,steps=10,tm,prog,tex;
+  const F=.0545,K=.062,DU=.5,DV=.25,BG=[1,.898,0],FG=[0,0,0];   // half the diffusion of the textbook values: stripes about 0.7x as wide   // yellow field, black pattern (the brand highlight), in both themes
+  let W=0,H=0,u,v,u2,v2,u8,img,raf=0,on=false,steps=8,tm,prog,tex,sc=1;
   if(gl){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o};
     prog=gl.createProgram();
     gl.attachShader(prog,sh(gl.VERTEX_SHADER,"#version 300 es\nout vec2 uv;void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);uv=vec2(p.x,1.-p.y);gl_Position=vec4(p*2.-1.,0,1);}"));
@@ -297,7 +297,8 @@ const rd=(()=>{
     for(let i=0,j=0,n=W*H;i<n;i++,j+=4){let s=(v[i]-.08)/.14;s=s<0?0:s>1?1:s;s=s*s*(3-2*s);d[j]=b0[0]*(1-s);d[j+1]=b0[1]*(1-s);d[j+2]=0;d[j+3]=255}
     ctx.putImageData(img,0,0)}
   function init(){const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
-    const cell=Math.max(2,Math.sqrt(w*h/(matchMedia("(pointer:coarse)").matches?60000:150000)));   // finer grid; coarser on phones
+    const coarse=matchMedia("(pointer:coarse)").matches,cell=Math.max(coarse?2:1.5,Math.sqrt(w*h/(coarse?90000:240000)));   // fine grid; a little coarser on phones
+    sc=2.4/cell;   // keeps clicks and brush strokes the same size on screen whatever the grid
     W=Math.ceil(w/cell);H=Math.ceil(h/cell);const n=W*H;
     u=new Float32Array(n).fill(1);v=new Float32Array(n);u2=new Float32Array(n);v2=new Float32Array(n);u8=new Uint8Array(n);
     if(gl){const dpr=Math.min(devicePixelRatio||1,2);cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);gl.viewport(0,0,cv.width,cv.height);
@@ -305,15 +306,15 @@ const rd=(()=>{
       gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE)}
     else{cv.width=W;cv.height=H;img=ctx.createImageData(W,H)}
-    for(let k=0,m=Math.round(n/1400);k<m;k++)seed(Math.random()*W|0,Math.random()*H|0,2+(Math.random()*3|0));
-    for(let k=0;k<(reduce?900:350);k++)step();draw()}
+    for(let k=0,m=Math.round(n/800);k<m;k++)seed(Math.random()*W|0,Math.random()*H|0,2+(Math.random()*2|0));
+    for(let k=0,N=+new URLSearchParams(location.search).get("rdpre")||(reduce?700:200);k<N;k++)step();draw()}   // ?rdpre=N pre-runs N steps (for previews)
   function frame(){const t0=performance.now();for(let k=0;k<steps;k++)step();draw();const ms=performance.now()-t0;
     if(ms>14&&steps>2)steps--;else if(ms<8&&steps<16)steps++;raf=requestAnimationFrame(frame)}
-  function paint(e){if(!u)return;const r=cv.getBoundingClientRect();seed(Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H),4)}
+  function paint(e){if(!u)return;const r=cv.getBoundingClientRect();seed(Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H),Math.max(2,Math.round(4*sc)))}
   function cellAt(e){const r=cv.getBoundingClientRect();return[Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H)]}
-  function burst(e){if(!u)return;const[cx,cy]=cellAt(e);seed(cx,cy,9);                       // a click: a big drop, plus a ring of satellites that grow into it
-    for(let k=0,n=8,a0=Math.random()*6.28;k<n;k++){const a=a0+k*6.2832/n,d=17+Math.random()*10;seed(Math.round(cx+Math.cos(a)*d),Math.round(cy+Math.sin(a)*d),2+(Math.random()*2|0))}
-    if(reduce||!raf){for(let k=0;k<80;k++)step();draw()}}                                // with motion off, grow it a little so the click still shows
+  function burst(e){if(!u)return;const[cx,cy]=cellAt(e);seed(cx,cy,Math.round(9*sc));                       // a click: a big drop, plus a ring of satellites that grow into it
+    for(let k=0,n=8,a0=Math.random()*6.28;k<n;k++){const a=a0+k*6.2832/n,d=(17+Math.random()*10)*sc;seed(Math.round(cx+Math.cos(a)*d),Math.round(cy+Math.sin(a)*d),Math.max(2,Math.round((2+(Math.random()*2|0))*sc)))}
+    if(reduce||!raf){for(let k=0;k<110;k++)step();draw()}}                                // with motion off, grow it a little so the click still shows
   cv.addEventListener("pointermove",e=>{if(on&&e.buttons!==0||on&&e.pointerType==="mouse")paint(e)});cv.addEventListener("pointerdown",burst);
   addEventListener("resize",()=>{if(on){clearTimeout(tm);tm=setTimeout(()=>{init();if(reduce)draw()},200)}});
   document.addEventListener("visibilitychange",()=>{if(!on||reduce)return;if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf)raf=requestAnimationFrame(frame)});
