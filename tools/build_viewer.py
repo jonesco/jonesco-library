@@ -96,6 +96,14 @@ for f in fonts:
         try: tc[k] = traits(os.path.join(root, f["file"]), f["n"])
         except Exception: tc[k] = {"k": "d", "w": 400, "wd": 1, "it": int(bool(f.get("i"))), "l": 0}
     f.update(tc[k]); f.pop("t", None)
+from family import family_of
+fp_ = os.path.join(root, "data", "family.cache")
+fc = json.load(open(fp_)) if os.path.exists(fp_) else {}
+for f in fonts:                                 # which family each font belongs to (cached by file)
+    if f["file"] not in fc: fc[f["file"]] = family_of(os.path.join(root, f["file"]), f["n"], f["f"])
+    f["fam"], f["fk"] = fc[f["file"]]
+json.dump(fc, open(fp_, "w"))
+fonts.sort(key=lambda f: (f["fk"], f.get("w", 400), f.get("it", 0), f["n"].lower()))
 json.dump(tc, open(tp, "w"))
 json.dump(cov, open(cov_path, "w"))
 print(len(removed), "fonts removed: can't set the sample sentence")

@@ -52,6 +52,10 @@ def add_font(name, data):
             from traits import traits
             item.update(traits(os.path.join(ROOT, rel), n)); item.pop("t", None)
         except Exception: pass
+        try:
+            from family import family_of
+            item["fam"], item["fk"] = family_of(os.path.join(ROOT, rel), item["n"], f)
+        except Exception: pass
         m = "".join(c for c in SENT if ord(c) not in cm)
         if m: item["x"] = m
         a["fonts"].append(item); jsave(D("added.json"), a)

@@ -165,6 +165,13 @@ main.sys-wrap{padding-top:32px;padding-bottom:32px}   /* air between the filter 
 .dlg .meta{margin:8px 0 24px;color:var(--muted)}
 .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:var(--space-head)}.btns .note{color:var(--muted);font-size:14px;margin-left:8px}
 .big{font-size:72px;line-height:1.1;overflow-wrap:anywhere;padding:24px 0 16px;border-top:var(--rule);outline:none;cursor:text;min-height:1.1em}
+/* Families: a card per family; opening it lists every style, each set in its own font */
+.card .stl{margin-left:auto;white-space:nowrap}
+.frow{display:grid;grid-template-columns:minmax(120px,200px) 1fr;gap:8px 24px;align-items:baseline;padding:16px 0;border-top:var(--thin);cursor:pointer}
+.frow:hover .fl{color:var(--accent)}
+.fl{font:700 var(--size-label)/1.3 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;transition:color var(--quick)}
+.fs{font-size:32px;line-height:1.2;overflow:hidden;overflow-wrap:anywhere;max-height:2.5em;min-width:0}
+@media (max-width:700px){.frow{grid-template-columns:1fr}.fs{font-size:26px}}
 .big:empty::before{content:"Type your own text";color:var(--muted);font-family:var(--font-body)}   /* shown when the text is cleared */
 .big:focus{box-shadow:0 3px 0 var(--accent)}   /* the magenta underline says "you are typing here" (the page is white here in light mode) */
 /* Dark mode makes the header, title band and filter bar white: hovers and focus there are magenta, since yellow disappears on white */
@@ -335,6 +342,9 @@ if(document.documentElement.classList.contains("home"))rd.start();
   <div class="btns"><button class="sys-btn sys-btn--md" id="pub" type="button"><span>Publish</span><span class="plus">↑</span></button></div>
   <div id="pubmsg" aria-live="polite"></div></div></div></section>
 
+<section id="fdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="fn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="fclose">Close ✕</button></div></div>
+  <div class="sys-wrap"><h2 class="sys-display" id="fn"></h2><p class="meta sys-label" id="fm"></p><div id="fstyles"></div></div></div></section>
+
 <section id="gdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="gn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="gclose">Close ✕</button></div></div>
   <div class="sys-wrap"><h2 class="sys-display" id="gn"></h2><p class="meta sys-label" id="gm"></p>
   <div class="btns"><button class="sys-btn sys-btn--md" id="gfin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="gcp">Copy path</button><span class="note" id="gnote"></span></div>
@@ -369,13 +379,27 @@ function load(f){if(loaded.has(f.f))return;loaded.add(f.f);
   new FontFace("F_"+f.f,`url("${encodeURI(f.file)}")`).load().then(x=>{document.fonts.add(x)}).catch(()=>{})}
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){load(FONTS[e.target.dataset.i]);io.unobserve(e.target)}}),{rootMargin:"400px"});
 let fRows=[],fShown=0;const FPAGE=60;
+let lastFam=null;
+function openFont(f,g){lastFam=g||null;$("close").textContent=g?"← "+g.fam:"Close ✕";closeAll();open(f)}
 function addFonts(){
-  fRows.slice(fShown,fShown+FPAGE).forEach(([f,i])=>{const d=document.createElement("div");d.className="card";d.dataset.i=i;
+  fRows.slice(fShown,fShown+FPAGE).forEach(g=>{const[f,i]=g.rep,many=g.styles.length>1,d=document.createElement("div");d.className="card";d.dataset.i=i;
     d.innerHTML=`<div class="sp" style="font-family:'F_${f.f}',sans-serif"></div><div class="row"><h3 class="nm sys-title"></h3></div>`;
-    const sp=d.querySelector(".sp");if(f.p){sp.textContent=f.p.slice(0,36);sp.dataset.p=1}else sp.textContent=$("sample").value;d.querySelector(".nm").textContent=f.n;if(f.x){const t=document.createElement("span");t.className="sys-tag sys-tag--light";t.textContent="Incomplete";t.title="Missing: "+f.x;d.querySelector(".row").append(t)}
-    d.onclick=()=>open(f);list.append(d);io.observe(d)});
+    const sp=d.querySelector(".sp");if(f.p){sp.textContent=f.p.slice(0,36);sp.dataset.p=1}else sp.textContent=$("sample").value;d.querySelector(".nm").textContent=many?g.fam:f.n;
+    const row=d.querySelector(".row");
+    if(many){const t=document.createElement("span");t.className="sys-tag sys-tag--light stl";t.textContent=g.styles.length+" styles";row.append(t)}
+    else if(f.x){const t=document.createElement("span");t.className="sys-tag sys-tag--light";t.textContent="Incomplete";t.title="Missing: "+f.x;row.append(t)}
+    d.onclick=()=>many?showFam(g):openFont(f);list.append(d);io.observe(d)});
   fShown=Math.min(fShown+FPAGE,fRows.length);
   setTimeout(moreFonts,0)}
+// The family view: every style listed in its own face; picking one opens its detail, and Back returns here
+function showFam(g){closeAll();$("fn").textContent=g.fam;const all=FONTS.filter(f=>(f.fk||f.f)===g.k).length;$("fm").textContent=g.styles.length<all?g.styles.length+" of "+all+" styles match":all+" styles";const box=$("fstyles");box.innerHTML="";
+  g.styles.forEach(([f])=>{load(f);const r=document.createElement("div");r.className="frow";r.tabIndex=0;
+    const lab=document.createElement("div");lab.className="fl";let st=f.n;if(f.n.toLowerCase().startsWith(g.fam.toLowerCase()))st=f.n.slice(g.fam.length).trim();lab.textContent=st||"Regular";
+    if(f.x){const t=document.createElement("span");t.className="sys-tag sys-tag--light";t.textContent="Incomplete";t.title="Missing: "+f.x;lab.append(t)}
+    const sp=document.createElement("div");sp.className="fs";sp.style.fontFamily=`'F_${f.f}',sans-serif`;sp.textContent=f.p?f.p.slice(0,30):$("sample").value;
+    r.append(lab,sp);r.onclick=()=>openFont(f,g);r.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();openFont(f,g)}};box.append(r)});
+  $("fdlg").classList.add("on");dlgIn()}
+$("fclose").onclick=dlgOut;
 function moreFonts(){   // keep adding batches while the end of the list is within ~1500px of the viewport
   if(!onGfx&&!document.body.classList.contains("home")&&$("dlg").classList.contains("on")===false&&fShown<fRows.length&&innerHeight+scrollY>document.documentElement.scrollHeight-1500)addFonts()}
 addEventListener("scroll",moreFonts,{passive:true});addEventListener("resize",moreFonts);
@@ -401,8 +425,12 @@ function render(){
   const n=fActive();$("fcount").textContent=n?" ("+n+")":"";$("freset").hidden=!n;
   list.style.setProperty("--sz",$("size").value+"px");
   list.innerHTML="";if(!rows.length)list.append(emptyState("fonts",$("q").value.trim(),fActive(),()=>{$("q").value="";fReset()}));
-  fRows=rows;fShown=0;$("loading").style.display="none";addFonts();
-  if(!onGfx)setSub(rows.length,FONTS.length,"fonts");
+  const groups=new Map();rows.forEach(r=>{const k=r[0].fk||r[0].f;let g=groups.get(k);if(!g){g={k,fam:r[0].fam||r[0].n,styles:[]};groups.set(k,g)}g.styles.push(r)});
+  fRows=[...groups.values()];fRows.forEach(g=>{g.styles.sort((a,b)=>(a[0].w||400)-(b[0].w||400)||(a[0].it||0)-(b[0].it||0)||(a[0].n<b[0].n?-1:1));
+    g.rep=g.styles.filter(r=>!r[0].it).sort((a,b)=>Math.abs(a[0].w-400)-Math.abs(b[0].w-400))[0]||g.styles[0]});
+  if(sort==="n"||sort==="")fRows.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:0);
+  fShown=0;$("loading").style.display="none";addFonts();
+  if(!onGfx){const fam=new Set(FONTS.map(f=>f.fk||f.f)).size,tot=FONTS.length;$("sub").textContent=groups.size===fam?fmt(fam)+" families · "+fmt(tot)+" fonts":fmt(groups.size)+" of "+fmt(fam)+" families · "+fmt(rows.length)+" fonts"}
 }
 function fReset(){fcat.clear();fw.clear();document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));["fsty","fthk","flang","comp"].forEach(i=>$(i).value="");render()}
 $("freset").onclick=fReset;
@@ -419,7 +447,7 @@ function open(f){load(f);const ff=`'F_${f.f}',sans-serif`;
   $("fin").style.display=LITE?"none":"";$("fino").onclick=()=>reveal(f.s,$("note"));$("fino").style.display=(!ONLINE&&f.s)?"":"none";$("cpp").style.display=ONLINE?"none":"";$("note").textContent="";
   $("cpn").onclick=()=>copyText(f.n);$("cpp").onclick=()=>copyText(f.file);
   $("dlg").classList.add("on");dlgIn()}
-$("close").onclick=dlgOut;
+$("close").onclick=()=>{if(lastFam){const g=lastFam;$("dlg").classList.remove("on");showFam(g)}else dlgOut()};
 ["q","fsty","fthk","flang","comp","sort","size"].forEach(i=>$(i).oninput=render);fLangs();
 $("sample").oninput=()=>document.querySelectorAll(".sp:not([data-p])").forEach(s=>s.textContent=$("sample").value);
 render();
@@ -484,7 +512,7 @@ $("theme").onclick=()=>setTheme($("theme").getAttribute("aria-checked")!=="true"
 // ---- Drop box, add and remove (needs the launcher; plain file:// shows it switched off)
 let SERVER=false;
 const OKEXT=new Set(["ttf","otf","png","jpg","jpeg","gif","tif","tiff","psd","pdf","eps","ai","svg"]);
-function refreshAll(){fLangs();FONTS.sort((a,b)=>a.n.toLowerCase()<b.n.toLowerCase()?-1:1);GFX.sort((a,b)=>a.p<b.p?-1:1);gTops();gExts();render();if(onGfx)gFilter()}
+function refreshAll(){fLangs();FONTS.sort((a,b)=>{const x=a.fk||a.n.toLowerCase(),y=b.fk||b.n.toLowerCase();return x<y?-1:x>y?1:(a.w||400)-(b.w||400)||(a.it||0)-(b.it||0)||(a.n<b.n?-1:1)});GFX.sort((a,b)=>a.p<b.p?-1:1);gTops();gExts();render();if(onGfx)gFilter()}
 function merge(st){const rf=new Set(st.removed.fonts),rg=new Set(st.removed.gfx),hf=new Set(FONTS.map(f=>f.file)),hg=new Set(GFX.map(g=>g.p));
   st.fonts.forEach(f=>{if(!hf.has(f.file))FONTS.push(f)});st.gfx.forEach(g=>{if(!hg.has(g.p))GFX.push(g)});
   FONTS=FONTS.filter(f=>!rf.has(f.file));GFX=GFX.filter(g=>!rg.has(g.p));refreshAll()}
