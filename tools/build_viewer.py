@@ -1,5 +1,5 @@
 # Usage: python3 build_viewer.py  -> writes ../index.html from ../data/*.json
-import json, glob, os, re
+import json, glob, os, re, sys
 here = os.path.dirname(os.path.abspath(__file__)); root = os.path.dirname(here)
 def pretty(ps):                      # GarageGothic-Black -> Garage Gothic Black
     t = re.sub(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Za-z])(?=\d)|[-_]+", " ", ps or "")
@@ -76,6 +76,17 @@ _ad = json.load(open(os.path.join(root, "data", "added.json"))) if os.path.exist
 fonts = [f for f in fonts if f["file"] not in set(_rm["fonts"])]
 json.dump([f["f"] for f in fonts], open(os.path.join(root, "data", "fontnames.json"), "w"))   # the drop box uses this to skip duplicates
 fonts += [f for f in _ad["fonts"] if f["file"] not in set(_rm["fonts"])]
+sys.path.insert(0, here)
+from traits import traits                  # category, weight, width, slant, scripts: what each font file says about itself
+tp = os.path.join(root, "data", "traits.cache")
+tc = json.load(open(tp)) if os.path.exists(tp) else {}
+for f in fonts:
+    k = f["file"] + "|" + f["n"]
+    if k not in tc:
+        try: tc[k] = traits(os.path.join(root, f["file"]), f["n"])
+        except Exception: tc[k] = {"k": "d", "w": 400, "wd": 1, "it": int(bool(f.get("i"))), "l": 0}
+    f.update(tc[k]); f.pop("t", None)
+json.dump(tc, open(tp, "w"))
 json.dump(cov, open(cov_path, "w"))
 print(len(removed), "fonts removed: can't set the sample sentence")
 gp = os.path.join(root, "data", "graphics.json")

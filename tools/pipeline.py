@@ -45,6 +45,10 @@ def add_font(name, data):
         post = t["post"] if "post" in t else None
         kind = "script" if re.search(r"script|hand|brush|write", n.lower()) else "mono" if (post and post.isFixedPitch) else "other"
         item = {"n": n.strip(), "f": f, "file": rel, "c": "Added", "s": "", "g": len(t.getGlyphOrder()), "i": bool(post and post.italicAngle), "t": kind}
+        try:
+            from traits import traits
+            item.update(traits(os.path.join(ROOT, rel), n)); item.pop("t", None)
+        except Exception: pass
         m = "".join(c for c in SENT if ord(c) not in cm)
         if m: item["x"] = m
         a["fonts"].append(item); jsave(D("added.json"), a)
