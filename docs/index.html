@@ -121,7 +121,7 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
 .fpanel{display:none}.fpanel.open{display:flex}   /* filters fold away on every screen size; the button is the first control in the bar */
 .freset{font:700 13px/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:8px 4px}.freset:hover{color:var(--accent)}.freset[hidden]{display:none}
 .gc{display:none;flex-wrap:wrap;gap:12px;align-items:center}
-main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first row */
+main.sys-wrap{padding-top:32px;padding-bottom:32px}   /* air between the filter bar and the first row, and between the last row and the footer */
 .grid{display:grid;gap:0;background:var(--paper);border-left:var(--thin);border-top:var(--thin)}
 .grid>*{border-right:var(--thin);border-bottom:var(--thin)}
 #list{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
