@@ -67,9 +67,12 @@ body.online #drop,body.online #dropmsg,body.online .localonly{display:none}
 #home{display:none;position:relative;height:calc(100vh - 64px);height:calc(100dvh - 64px);min-height:440px;background:var(--highlight);overflow:hidden}
 body.home #home{display:block}
 body.home .herob,body.home .bar,body.home main,body.home .sys-footer{display:none}
-.sys-nav{display:none}   /* no page links in the header: the overview and the switch under each title do that job */
-.herob{--ink:var(--hf);--paper:var(--hb)}   /* controls inside the band follow the band's colors */
-.hero .sys-content-switcher{margin-top:20px}
+.sys-header .sys-nav{display:none}   /* no page links in the header: the overview and the switch under each title do that job */
+.herob{--ink:var(--hf);--paper:var(--hb);--thin:var(--thin-w) solid var(--hf)}   /* controls inside the band follow the band's colors; --thin is resolved at :root, so the band restates it or the switcher's outline disappears */
+/* Fonts/Graphics: the system's section nav (as on Style specimens), laid on the band: same color as the band, current link underlined */
+.herob .sys-section-nav{position:static;--ink:var(--hb);--paper:var(--hf);border-top:1px solid var(--line-dark)}
+.herob .sys-section-nav .sys-nav{display:flex}
+:root[data-theme=dark] .herob .sys-section-nav .sys-nav a.is-current{color:var(--hf)}
 #rd{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 .homewrap{position:absolute;inset:0;display:flex;align-items:flex-end;pointer-events:none}
 .homepanel{pointer-events:auto;width:min(460px,100%);background:var(--paper);border:var(--rule);padding:28px;margin-bottom:var(--gutter)}
@@ -186,9 +189,10 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
   <div class="sys-wrap homewrap"><div class="homepanel"><h1 class="sys-display">Fonts and graphics</h1><p class="sys-label">Collected since college</p>
     <div class="homelinks"><a class="sys-btn" href="#fonts">Fonts <span class="plus">→</span></a><a class="sys-btn" href="#graphics">Graphics <span class="plus">→</span></a></div></div></div></section>
 <div class="herob"><div class="sys-wrap hero"><div class="herorow"><div><h1 class="sys-display" id="hero">Fonts</h1><p class="sys-label" id="sub"></p>
-    <div class="sys-content-switcher sys-content-switcher--md" role="tablist" aria-label="Library section"><button role="tab" id="hs-f" aria-selected="true">Fonts</button><button role="tab" id="hs-g" aria-selected="false">Graphics</button></div></div>
+</div>
   <div><div id="drop" class="off" role="button" tabindex="0" aria-label="Add fonts or graphics"><span class="sys-label" id="droplbl">Drop fonts, graphics or folders</span><small id="dropsm">Open with “Open Library.command” to add files</small></div>
-  <div id="dropmsg" aria-live="polite"></div><input type="file" id="pick" multiple hidden></div></div></div></div>
+  <div id="dropmsg" aria-live="polite"></div><input type="file" id="pick" multiple hidden></div></div></div>
+<nav class="sys-section-nav" aria-label="Library section"><div class="sys-wrap sys-nav"><a href="#fonts" id="hs-f" class="is-current" aria-current="page">Fonts</a><a href="#graphics" id="hs-g">Graphics</a></div></nav></div>
 
 <div class="bar"><div class="sys-wrap">
   <span class="fc" style="display:contents">
@@ -330,12 +334,12 @@ function gOpen(r){$("gn").textContent=r.n;$("gm").textContent=r.c+" · ."+r.ext;
 $("gclose").onclick=()=>$("gdlg").classList.remove("on");$("morebtn").onclick=gMore;
 $("gprev").onclick=()=>{$("gprev").setAttribute("aria-checked",$("gprev").getAttribute("aria-checked")!=="true");gExts();gFilter()};
 ["gq","gext"].forEach(i=>$(i).oninput=gFilter);$("gtop").oninput=()=>{gExts();gFilter()};
-function tab(g){onGfx=g;$("hs-f").setAttribute("aria-selected",!g);$("hs-g").setAttribute("aria-selected",g);$("tf").toggleAttribute("aria-current",!g);$("tg").toggleAttribute("aria-current",g);
+function tab(g){onGfx=g;$("hs-f").classList.toggle("is-current",!g);$("hs-g").classList.toggle("is-current",g);$("hs-f").toggleAttribute("aria-current",!g);$("hs-g").toggleAttribute("aria-current",g);$("tf").toggleAttribute("aria-current",!g);$("tg").toggleAttribute("aria-current",g);
   $("tf").setAttribute("aria-pressed",!g);$("hero").textContent=g?"Graphics":"Fonts";
   $("list").style.display=g?"none":"";$("glist").style.display=g?"":"none";document.querySelector(".fc").style.display=g?"none":"contents";
   document.querySelector(".gc").style.display=g?"flex":"none";$("more").style.display=g&&gShown<gRows.length?"block":"none";
   if(g){if(!gRows.length)gFilter();else setSub(gRows.length,GFX.length,"graphics")}else render()}
-$("tf").onclick=$("hs-f").onclick=()=>{location.hash="fonts"};$("tg").onclick=$("hs-g").onclick=()=>{location.hash="graphics"};
+$("tf").onclick=()=>{location.hash="fonts"};$("tg").onclick=()=>{location.hash="graphics"};
 addEventListener("keydown",e=>{if(e.key==="Escape"){$("dlg").classList.remove("on");$("gdlg").classList.remove("on")}});
 
 // ---- Overview: Gray-Scott reaction-diffusion. Two simulated chemicals form coral and fingerprint patterns; it keeps growing when motion is on.
