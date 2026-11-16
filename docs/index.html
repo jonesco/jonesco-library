@@ -25,6 +25,7 @@
 <meta name="twitter:description" content="Fonts and graphics.">
 <meta name="twitter:image" content="https://library.jonesco.com/icons/og.png">
 <!-- Jonesco system 3.5.0, copied from v/3.5.0 into ./system so the library works offline. Pinned: bump only on purpose. -->
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://design.jonesco.com/v/3.5.0/fonts/TradeGothic-BoldCondTwenty.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="https://design.jonesco.com/v/3.5.0/fonts/TradeGothic-BoldTwo.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="https://design.jonesco.com/v/3.5.0/fonts/TradeGothic-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="https://design.jonesco.com/v/3.5.0/fonts/TradeGothic-Bold.woff2">
 <link rel="stylesheet" href="https://design.jonesco.com/v/3.5.0/system.css">
 <link rel="stylesheet" href="https://design.jonesco.com/v/3.5.0/patterns.css">
 <meta name="theme-color" content="#000000" id="tc">
@@ -197,7 +198,13 @@ main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first ro
   .chip{height:44px}.fsel{width:100%}.fsel .sys-input{flex:1 1 140px;min-width:0;height:44px}#sortrow{margin-left:0;width:100%}
 }
 @media (max-width:349px){.sys-brand span{display:none}}
-</style><script>if(!location.hash.slice(1))document.documentElement.classList.add("home")</script></head><body>
+/* Until the Trade Gothic files arrive, the text stays hidden (the backgrounds and the animation show), so there is no flash of fallback fonts */
+.fw .sys-header .sys-wrap,.fw .herob .sys-wrap,.fw .sys-section-nav .sys-wrap,.fw .bar .sys-wrap,.fw main,.fw .sys-footer .sys-wrap,.fw .homepanel{visibility:hidden}
+</style><script>if(!location.hash.slice(1))document.documentElement.classList.add("home");
+(function(){var d=document.documentElement;d.classList.add("fw");function done(){d.classList.remove("fw")}
+if(!document.fonts||!document.fonts.load){done();return}
+var t=setTimeout(done,2500);
+Promise.all(["700 20px 'Trade Gothic Bold Cond 20'","700 14px 'Trade Gothic Bold 2'","400 16px 'Trade Gothic'","700 16px 'Trade Gothic'"].map(function(f){return document.fonts.load(f)})).then(function(){clearTimeout(t);done()},done)})()</script></head><body>
 <header class="sys-header"><div class="sys-wrap sys-bar">
   <a class="sys-brand" href="#"><img class="docs-mark" src="icons/jonesco-library.svg" alt=""><span>Jonesco.library</span></a>
   <div class="hdr-r"><nav class="sys-nav"><button id="tf">Fonts</button><button id="tg">Graphics</button></nav>
@@ -207,6 +214,68 @@ main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first ro
 <section id="home" aria-label="Overview"><canvas id="rd" aria-hidden="true"></canvas>
   <div class="sys-wrap homewrap"><div class="homepanel"><h1 class="sys-display">Fonts &amp; graphics</h1>
     <div class="homelinks"><a class="sys-btn" href="#fonts">Fonts <span class="plus">→</span></a><a class="sys-btn" href="#graphics">Graphics <span class="plus">→</span></a></div></div></div></section>
+<script>
+// ---- Overview: Gray-Scott reaction-diffusion. Two simulated chemicals form coral and fingerprint patterns; it keeps growing when motion is on.
+const rd=(()=>{
+  // Gray-Scott on a coarse grid (CPU), drawn by WebGL2 at the screen's full pixel density: the field is sampled with linear
+  // filtering and thresholded with derivative-based anti-aliasing, so the edges stay sharp at any size. Falls back to a 2D canvas.
+  const cv=document.getElementById("rd"),reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const gl=cv.getContext("webgl2",{alpha:false,antialias:false}),ctx=gl?null:cv.getContext("2d",{alpha:false});
+  const F=.0545,K=.062,DU=.5,DV=.25,BG=[1,.898,0],FG=[0,0,0];   // half the diffusion of the textbook values: stripes about 0.7x as wide   // yellow field, black pattern (the brand highlight), in both themes
+  let W=0,H=0,u,v,u2,v2,u8,img,raf=0,on=false,steps=8,tm,prog,tex,sc=1,cs=2,booms=[],lw=0,lh=1;
+  if(gl){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o};
+    prog=gl.createProgram();
+    gl.attachShader(prog,sh(gl.VERTEX_SHADER,"#version 300 es\nout vec2 uv;void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);uv=vec2(p.x,1.-p.y);gl_Position=vec4(p*2.-1.,0,1);}"));
+    gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,"#version 300 es\nprecision highp float;in vec2 uv;uniform sampler2D T;uniform vec3 bg,fg;out vec4 o;void main(){float v=texture(T,uv).r;float w=max(fwidth(v)*.7,.002);float s=smoothstep(.48-w,.48+w,v);o=vec4(mix(bg,fg,s),1.);}"));
+    gl.linkProgram(prog);gl.useProgram(prog);gl.uniform3fv(gl.getUniformLocation(prog,"bg"),BG);gl.uniform3fv(gl.getUniformLocation(prog,"fg"),FG);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1)}
+  function seed(cx,cy,r){for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(dx*dx+dy*dy>r*r)continue;const i=((cy+dy+H)%H)*W+(cx+dx+W)%W;u[i]=.5;v[i]=1}}
+  function step(){
+    for(let y=0;y<H;y++){const yu=(y?y-1:H-1)*W,yd=(y<H-1?y+1:0)*W,yc=y*W;
+      for(let x=0;x<W;x++){const xl=x?x-1:W-1,xr=x<W-1?x+1:0,i=yc+x,a=u[i],b=v[i];
+        const lu=-a+.2*(u[yc+xl]+u[yc+xr]+u[yu+x]+u[yd+x])+.05*(u[yu+xl]+u[yu+xr]+u[yd+xl]+u[yd+xr]);
+        const lv=-b+.2*(v[yc+xl]+v[yc+xr]+v[yu+x]+v[yd+x])+.05*(v[yu+xl]+v[yu+xr]+v[yd+xl]+v[yd+xr]);
+        const r=a*b*b;u2[i]=a+DU*lu-r+F*(1-a);v2[i]=b+DV*lv+r-(F+K)*b}}
+    let t=u;u=u2;u2=t;t=v;v=v2;v2=t}
+  function draw(){if(!u)return;
+    if(gl){for(let i=0,n=W*H;i<n;i++){const s=v[i]*3.2;u8[i]=s<0?0:s>1?255:s*255|0}
+      gl.bindTexture(gl.TEXTURE_2D,tex);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,W,H,gl.RED,gl.UNSIGNED_BYTE,u8);gl.drawArrays(gl.TRIANGLES,0,3);return}
+    const d=img.data,b0=[255,229,0];                                 // 2D fallback: same colors, soft edges
+    for(let i=0,j=0,n=W*H;i<n;i++,j+=4){let s=(v[i]-.08)/.14;s=s<0?0:s>1?1:s;s=s*s*(3-2*s);d[j]=b0[0]*(1-s);d[j+1]=b0[1]*(1-s);d[j+2]=0;d[j+3]=255}
+    ctx.putImageData(img,0,0)}
+  function init(){const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
+    const coarse=matchMedia("(pointer:coarse)").matches,cell=Math.max(coarse?2:1.5,Math.sqrt(w*h/(coarse?90000:240000)));   // fine grid; a little coarser on phones
+    sc=2.4/cell;cs=cell;booms.length=0;lw=w;lh=h;   // keeps clicks and brush strokes the same size on screen whatever the grid
+    W=Math.ceil(w/cell);H=Math.ceil(h/cell);const n=W*H;
+    u=new Float32Array(n).fill(1);v=new Float32Array(n);u2=new Float32Array(n);v2=new Float32Array(n);u8=new Uint8Array(n);
+    if(gl){const dpr=Math.min(devicePixelRatio||1,2);cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);gl.viewport(0,0,cv.width,cv.height);
+      tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,W,H,0,gl.RED,gl.UNSIGNED_BYTE,null);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE)}
+    else{cv.width=W;cv.height=H;img=ctx.createImageData(W,H)}
+    for(let k=0,m=Math.round(n/800);k<m;k++)seed(Math.random()*W|0,Math.random()*H|0,2+(Math.random()*2|0));
+    for(let k=0,N=+new URLSearchParams(location.search).get("rdpre")||(reduce?700:30);k<N;k++)step();draw()}   // ?rdpre=N pre-runs N steps (for previews)
+  function frame(){const t0=performance.now();for(let k=booms.length-1;k>=0;k--)if(boomStep(booms[k]))booms.splice(k,1);for(let k=0;k<steps;k++)step();draw();const ms=performance.now()-t0;
+    if(ms>14&&steps>2)steps--;else if(ms<8&&steps<16)steps++;raf=requestAnimationFrame(frame)}
+  function paint(e){if(!u)return;const r=cv.getBoundingClientRect();seed(Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H),Math.max(2,Math.round(4*sc)))}
+  function cellAt(e){const r=cv.getBoundingClientRect();return[Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H)]}
+  // A click clears a space: a ragged, expanding patch is wiped to blank yellow, and the surrounding pattern grows back into it.
+  function boomStep(b){const r=b.r,x0=Math.max(0,Math.floor(b.cx-r*1.1)),x1=Math.min(W-1,Math.ceil(b.cx+r*1.1)),y0=Math.max(0,Math.floor(b.cy-r*1.1)),y1=Math.min(H-1,Math.ceil(b.cy+r*1.1));
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const dx=x-b.cx,dy=y-b.cy,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
+      const rr=r*(1+.025*Math.sin(3*a+b.p[0])+.015*Math.sin(7*a+b.p[1])+.01*Math.sin(12*a+b.p[2]));   // a round drop with a barely uneven edge
+      if(d<rr){const i=y*W+x;u[i]=1;v[i]=0}}
+    b.r+=b.sp;return b.r>b.max}
+  function burst(e){if(!u)return;const[cx,cy]=cellAt(e),max=Math.min(.36*Math.min(W,H),260/cs);
+    const b={cx,cy,r:2,max,sp:Math.max(4.5,15/cs),p:[0,1,2,3].map(()=>Math.random()*6.2832)};
+    if(!reduce){try{navigator.vibrate&&navigator.vibrate(35)}catch(_){}}
+    if(reduce||!raf){while(!boomStep(b)){}for(let k=0;k<90;k++)step();draw()}else booms.push(b)}   // with motion off the clearing happens at once
+  cv.addEventListener("pointermove",e=>{if(on&&e.buttons!==0||on&&e.pointerType==="mouse")paint(e)});cv.addEventListener("pointerdown",burst);
+  addEventListener("resize",()=>{if(on){clearTimeout(tm);tm=setTimeout(()=>{   // restart only on a real size change; phone address bars nudge the height a little
+      const w=cv.clientWidth,h=cv.clientHeight;if(Math.abs(w-lw)<2&&Math.abs(h-lh)/lh<.15){if(reduce)draw();return}init();if(reduce)draw()},200)}});
+  document.addEventListener("visibilitychange",()=>{if(!on||reduce)return;if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf)raf=requestAnimationFrame(frame)});
+  return{start(){if(on)return;on=true;init();if(!reduce&&!raf)raf=requestAnimationFrame(frame)},stop(){on=false;cancelAnimationFrame(raf);raf=0},draw,dims(){return[W,H,cs]},tick(n){for(let i=0;i<n;i++){for(let k=booms.length-1;k>=0;k--)if(boomStep(booms[k]))booms.splice(k,1);for(let k=0;k<steps;k++)step()}draw();return booms.length}};   // tick: test hook that plays n frames
+})();
+if(document.documentElement.classList.contains("home"))rd.start();
+</script>
 <div class="herob"><div class="sys-wrap hero"><div class="herorow"><div><h1 class="sys-display" id="hero">Fonts</h1><p class="sys-label" id="sub"></p>
 </div>
   <div><div id="drop" class="off" role="button" tabindex="0" aria-label="Add fonts or graphics"><span class="sys-label" id="droplbl">Drop fonts, graphics or folders</span><small id="dropsm">Open with “Open Library.command” to add files</small></div>
@@ -368,65 +437,8 @@ $("dlg").onclick=e=>{if(e.target===$("dlg"))dlgOut()};$("gdlg").onclick=e=>{if(e
 addEventListener("popstate",()=>{if(!hasDlg()){$("dlg").classList.remove("on");$("gdlg").classList.remove("on")}});
 addEventListener("keydown",e=>{if(e.key==="Escape")dlgOut()});
 
-// ---- Overview: Gray-Scott reaction-diffusion. Two simulated chemicals form coral and fingerprint patterns; it keeps growing when motion is on.
-const rd=(()=>{
-  // Gray-Scott on a coarse grid (CPU), drawn by WebGL2 at the screen's full pixel density: the field is sampled with linear
-  // filtering and thresholded with derivative-based anti-aliasing, so the edges stay sharp at any size. Falls back to a 2D canvas.
-  const cv=$("rd"),reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const gl=cv.getContext("webgl2",{alpha:false,antialias:false}),ctx=gl?null:cv.getContext("2d",{alpha:false});
-  const F=.0545,K=.062,DU=.5,DV=.25,BG=[1,.898,0],FG=[0,0,0];   // half the diffusion of the textbook values: stripes about 0.7x as wide   // yellow field, black pattern (the brand highlight), in both themes
-  let W=0,H=0,u,v,u2,v2,u8,img,raf=0,on=false,steps=8,tm,prog,tex,sc=1,cs=2,booms=[],lw=0,lh=1;
-  if(gl){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o};
-    prog=gl.createProgram();
-    gl.attachShader(prog,sh(gl.VERTEX_SHADER,"#version 300 es\nout vec2 uv;void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);uv=vec2(p.x,1.-p.y);gl_Position=vec4(p*2.-1.,0,1);}"));
-    gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,"#version 300 es\nprecision highp float;in vec2 uv;uniform sampler2D T;uniform vec3 bg,fg;out vec4 o;void main(){float v=texture(T,uv).r;float w=max(fwidth(v)*.7,.002);float s=smoothstep(.48-w,.48+w,v);o=vec4(mix(bg,fg,s),1.);}"));
-    gl.linkProgram(prog);gl.useProgram(prog);gl.uniform3fv(gl.getUniformLocation(prog,"bg"),BG);gl.uniform3fv(gl.getUniformLocation(prog,"fg"),FG);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1)}
-  function seed(cx,cy,r){for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(dx*dx+dy*dy>r*r)continue;const i=((cy+dy+H)%H)*W+(cx+dx+W)%W;u[i]=.5;v[i]=1}}
-  function step(){
-    for(let y=0;y<H;y++){const yu=(y?y-1:H-1)*W,yd=(y<H-1?y+1:0)*W,yc=y*W;
-      for(let x=0;x<W;x++){const xl=x?x-1:W-1,xr=x<W-1?x+1:0,i=yc+x,a=u[i],b=v[i];
-        const lu=-a+.2*(u[yc+xl]+u[yc+xr]+u[yu+x]+u[yd+x])+.05*(u[yu+xl]+u[yu+xr]+u[yd+xl]+u[yd+xr]);
-        const lv=-b+.2*(v[yc+xl]+v[yc+xr]+v[yu+x]+v[yd+x])+.05*(v[yu+xl]+v[yu+xr]+v[yd+xl]+v[yd+xr]);
-        const r=a*b*b;u2[i]=a+DU*lu-r+F*(1-a);v2[i]=b+DV*lv+r-(F+K)*b}}
-    let t=u;u=u2;u2=t;t=v;v=v2;v2=t}
-  function draw(){if(!u)return;
-    if(gl){for(let i=0,n=W*H;i<n;i++){const s=v[i]*3.2;u8[i]=s<0?0:s>1?255:s*255|0}
-      gl.bindTexture(gl.TEXTURE_2D,tex);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,W,H,gl.RED,gl.UNSIGNED_BYTE,u8);gl.drawArrays(gl.TRIANGLES,0,3);return}
-    const d=img.data,b0=[255,229,0];                                 // 2D fallback: same colors, soft edges
-    for(let i=0,j=0,n=W*H;i<n;i++,j+=4){let s=(v[i]-.08)/.14;s=s<0?0:s>1?1:s;s=s*s*(3-2*s);d[j]=b0[0]*(1-s);d[j+1]=b0[1]*(1-s);d[j+2]=0;d[j+3]=255}
-    ctx.putImageData(img,0,0)}
-  function init(){const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
-    const coarse=matchMedia("(pointer:coarse)").matches,cell=Math.max(coarse?2:1.5,Math.sqrt(w*h/(coarse?90000:240000)));   // fine grid; a little coarser on phones
-    sc=2.4/cell;cs=cell;booms.length=0;lw=w;lh=h;   // keeps clicks and brush strokes the same size on screen whatever the grid
-    W=Math.ceil(w/cell);H=Math.ceil(h/cell);const n=W*H;
-    u=new Float32Array(n).fill(1);v=new Float32Array(n);u2=new Float32Array(n);v2=new Float32Array(n);u8=new Uint8Array(n);
-    if(gl){const dpr=Math.min(devicePixelRatio||1,2);cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);gl.viewport(0,0,cv.width,cv.height);
-      tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,W,H,0,gl.RED,gl.UNSIGNED_BYTE,null);
-      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE)}
-    else{cv.width=W;cv.height=H;img=ctx.createImageData(W,H)}
-    for(let k=0,m=Math.round(n/800);k<m;k++)seed(Math.random()*W|0,Math.random()*H|0,2+(Math.random()*2|0));
-    for(let k=0,N=+new URLSearchParams(location.search).get("rdpre")||(reduce?700:200);k<N;k++)step();draw()}   // ?rdpre=N pre-runs N steps (for previews)
-  function frame(){const t0=performance.now();for(let k=booms.length-1;k>=0;k--)if(boomStep(booms[k]))booms.splice(k,1);for(let k=0;k<steps;k++)step();draw();const ms=performance.now()-t0;
-    if(ms>14&&steps>2)steps--;else if(ms<8&&steps<16)steps++;raf=requestAnimationFrame(frame)}
-  function paint(e){if(!u)return;const r=cv.getBoundingClientRect();seed(Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H),Math.max(2,Math.round(4*sc)))}
-  function cellAt(e){const r=cv.getBoundingClientRect();return[Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H)]}
-  // A click clears a space: a ragged, expanding patch is wiped to blank yellow, and the surrounding pattern grows back into it.
-  function boomStep(b){const r=b.r,x0=Math.max(0,Math.floor(b.cx-r*1.1)),x1=Math.min(W-1,Math.ceil(b.cx+r*1.1)),y0=Math.max(0,Math.floor(b.cy-r*1.1)),y1=Math.min(H-1,Math.ceil(b.cy+r*1.1));
-    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const dx=x-b.cx,dy=y-b.cy,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
-      const rr=r*(1+.025*Math.sin(3*a+b.p[0])+.015*Math.sin(7*a+b.p[1])+.01*Math.sin(12*a+b.p[2]));   // a round drop with a barely uneven edge
-      if(d<rr){const i=y*W+x;u[i]=1;v[i]=0}}
-    b.r+=b.sp;return b.r>b.max}
-  function burst(e){if(!u)return;const[cx,cy]=cellAt(e),max=Math.min(.36*Math.min(W,H),260/cs);
-    const b={cx,cy,r:2,max,sp:Math.max(4.5,15/cs),p:[0,1,2,3].map(()=>Math.random()*6.2832)};
-    if(!reduce){try{navigator.vibrate&&navigator.vibrate(35)}catch(_){}}
-    if(reduce||!raf){while(!boomStep(b)){}for(let k=0;k<90;k++)step();draw()}else booms.push(b)}   // with motion off the clearing happens at once
-  cv.addEventListener("pointermove",e=>{if(on&&e.buttons!==0||on&&e.pointerType==="mouse")paint(e)});cv.addEventListener("pointerdown",burst);
-  addEventListener("resize",()=>{if(on){clearTimeout(tm);tm=setTimeout(()=>{   // restart only on a real size change; phone address bars nudge the height a little
-      const w=cv.clientWidth,h=cv.clientHeight;if(Math.abs(w-lw)<2&&Math.abs(h-lh)/lh<.15){if(reduce)draw();return}init();if(reduce)draw()},200)}});
-  document.addEventListener("visibilitychange",()=>{if(!on||reduce)return;if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf)raf=requestAnimationFrame(frame)});
-  return{start(){on=true;init();if(!reduce&&!raf)raf=requestAnimationFrame(frame)},stop(){on=false;cancelAnimationFrame(raf);raf=0},draw,dims(){return[W,H,cs]},tick(n){for(let i=0;i<n;i++){for(let k=booms.length-1;k>=0;k--)if(boomStep(booms[k]))booms.splice(k,1);for(let k=0;k<steps;k++)step()}draw();return booms.length}};   // tick: test hook that plays n frames
-})();
+// (the overview animation runs from its own early script, right after the overview markup)
+
 
 // ---- Views: overview (home), #fonts, #graphics
 function setHome(on){document.body.classList.toggle("home",on);document.documentElement.classList.toggle("home",on);if(on){$("tf").removeAttribute("aria-current");$("tg").removeAttribute("aria-current");rd.start()}else rd.stop()}
