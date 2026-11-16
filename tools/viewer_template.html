@@ -360,7 +360,8 @@ $("tf").onclick=()=>{location.hash="fonts"};$("tg").onclick=()=>{location.hash="
 // A detail view gets its own history entry, so the browser Back button closes it and returns to the list instead of leaving for the overview
 const hasDlg=()=>history.state&&history.state.dlg;
 function dlgIn(){document.querySelectorAll(".dpanel").forEach(p=>p.scrollTop=0);if(!hasDlg())history.pushState({dlg:1},"")}
-function dlgOut(){if(hasDlg())history.back();else{$("dlg").classList.remove("on");$("gdlg").classList.remove("on")}}
+function dlgOut(){$("dlg").classList.remove("on");$("gdlg").classList.remove("on");if(hasDlg())history.back()}   // hides at once, then drops the history entry the view added
+if(hasDlg())history.replaceState(null,"")   // a reload leaves the old marker on the entry; clear it so Back never leaves the page
 $("dlg").onclick=e=>{if(e.target===$("dlg"))dlgOut()};$("gdlg").onclick=e=>{if(e.target===$("gdlg"))dlgOut()};
 addEventListener("popstate",()=>{if(!hasDlg()){$("dlg").classList.remove("on");$("gdlg").classList.remove("on")}});
 addEventListener("keydown",e=>{if(e.key==="Escape")dlgOut()});
