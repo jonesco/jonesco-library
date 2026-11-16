@@ -71,7 +71,7 @@ body.online #drop,body.online #dropmsg,body.online .localonly{display:none}
 /* Fonts/Graphics: the system's section nav (as on Style specimens), laid on the band: same color as the band, current link underlined */
 body>.sys-section-nav{top:64px;z-index:9;--ink:var(--hb);--paper:var(--hf);border-top:1px solid var(--line-dark)}   /* stays under the header while the lists scroll */
 body>.sys-section-nav .sys-nav{display:flex}
-:root[data-theme=dark] body>.sys-section-nav .sys-nav a.is-current{color:var(--hf)}
+:root[data-theme=dark] body>.sys-section-nav .sys-nav a.is-current{color:var(--hf);border-bottom-color:var(--accent)}   /* the band is white in dark mode: magenta underline, as yellow vanishes on white */
 #rd{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 .homewrap{position:absolute;inset:0;display:flex;align-items:flex-end;pointer-events:none}
 .homepanel{pointer-events:auto;width:min(460px,100%);background:var(--paper);border:var(--rule);padding:28px;margin-bottom:var(--gutter)}
@@ -148,7 +148,11 @@ main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first ro
 .dlg h2{margin:var(--space-section) 0 0;font-size:var(--size-section)}
 .dlg .meta{margin:8px 0 24px;color:var(--muted)}
 .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:var(--space-head)}.btns .note{color:var(--muted);font-size:14px;margin-left:8px}
-.big{font-size:72px;line-height:1.1;overflow-wrap:anywhere;padding:24px 0 32px;border-top:var(--rule);outline:none}
+.big{font-size:72px;line-height:1.1;overflow-wrap:anywhere;padding:24px 0 16px;border-top:var(--rule);outline:none;cursor:text;min-height:1.1em}
+.big:empty::before{content:"Type your own text";color:var(--muted);font-family:var(--font-body)}   /* shown when the text is cleared */
+.big:focus{box-shadow:0 3px 0 var(--accent)}   /* the magenta underline says "you are typing here" (the page is white here in light mode) */
+:root[data-theme=dark] .big:focus{box-shadow:0 3px 0 var(--highlight)}   /* yellow on the black page in dark mode */
+.bighint{margin:0 0 24px;color:var(--muted)}
 #grid{grid-template-columns:repeat(auto-fill,minmax(72px,1fr));border-top:var(--thin);margin-bottom:var(--space-section)}
 #grid div{background:var(--paper);font-size:30px;text-align:center;padding:12px 0}
 .artbox{background:var(--paper);border:var(--thin);padding:24px;margin-bottom:var(--space-section);display:flex;justify-content:center}
@@ -237,7 +241,7 @@ main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first ro
   <div class="sys-wrap"><h2 class="sys-display" id="dn"></h2><p class="meta sys-label" id="dm"></p>
   <div class="btns"><button class="sys-btn sys-btn--md" id="fin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="fino">Show original</button>
     <button class="sys-btn sys-btn--md sys-btn--ghost" id="cpn">Copy name</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="cpp">Copy file path</button><span class="note" id="note"></span></div>
-  <div class="big" id="dbig" contenteditable spellcheck="false"></div><div id="grid" class="grid"></div></div></section>
+  <div class="big" id="dbig" contenteditable spellcheck="false" role="textbox" aria-label="Type your own text to preview this font"></div><p class="sys-label bighint">Click the text and type your own</p><div id="grid" class="grid"></div></div></section>
 
 <footer class="sys-footer"><div class="sys-wrap"><small>Personal font and graphics library. For private use only.</small></div></footer>
 
