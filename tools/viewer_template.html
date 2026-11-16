@@ -92,13 +92,16 @@ body>.sys-section-nav .sys-nav{display:flex}
 .hero h1{margin:0;font-size:var(--size-section)}
 .hero p{margin:8px 0 0;color:var(--hm)}
 .herorow{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
-#drop{width:360px;max-width:100%;min-height:88px;padding:14px 18px;background:transparent;color:var(--hf);border:var(--thin-w) dashed var(--hf);cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:4px;transition:background var(--quick),color var(--quick)}
-#drop .sys-label{font-size:var(--size-tag)}#drop small{color:var(--hm);font-size:13px}
-#drop:hover,#drop.over{background:var(--hf);color:var(--hb);border-style:solid}#drop:hover small,#drop.over small{color:var(--hb)}
-#drop.off{cursor:default;opacity:.7}#drop.off:hover{background:transparent;color:var(--hf);border-style:dashed}#drop.off:hover small{color:var(--hm)}
-.pubrow{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}.pubrow[hidden]{display:none}#pubmsg{font-size:14px;color:var(--hm);max-width:300px}
-#dropmsg{max-width:360px;font-size:14px;margin-top:8px;color:var(--hm)}#dropmsg details{margin-top:4px}#dropmsg summary{cursor:pointer;color:var(--hf);font-family:var(--font-label);font-weight:700;font-size:13px;letter-spacing:var(--track-label);text-transform:uppercase}
+/* Add and Publish are modals opened from two icon buttons in the header (launcher only) */
+.sys-icon-btn[hidden]{display:none}.hdr-r .sys-icon-btn{margin:0 -6px}
+#drop{width:100%;min-height:140px;padding:24px;background:transparent;color:var(--ink);border:var(--thin-w) dashed var(--ink);cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:6px;transition:background var(--quick),color var(--quick)}
+#drop small{color:var(--muted);font-size:14px}
+#drop:hover,#drop.over{background:var(--ink);color:var(--paper);border-style:solid}#drop:hover small,#drop.over small{color:var(--paper)}
+.dsmall{width:min(560px,100%)}.dsmall p.lead{margin:0 0 20px}
+#dropmsg{font-size:15px;margin-top:16px;color:var(--muted)}#dropmsg:empty{display:none}#dropmsg details{margin-top:8px}#dropmsg summary{cursor:pointer;color:var(--ink);font-family:var(--font-label);font-weight:700;font-size:13px;letter-spacing:var(--track-label);text-transform:uppercase}
 #dropmsg ul{margin:6px 0 0;padding-left:18px;max-height:160px;overflow:auto}
+#afollow{margin-top:24px;padding-top:20px;border-top:var(--thin)}#afollow p{margin:0 0 12px}#afollow[hidden]{display:none}
+#pubmsg{font-size:15px;color:var(--muted)}
 .btns .sys-btn.warn{background:var(--accent);border-color:var(--accent);color:var(--paper)}
 /* The filter bar is the same color as the header and title band (black in light, white in dark), as on Style specimens; its fields reverse */
 .bar{position:sticky;top:116px;z-index:9;background:var(--hb);color:var(--hf);--ink:var(--hf);--paper:var(--hb);--thin:var(--thin-w) solid var(--hf)}
@@ -213,6 +216,8 @@ Promise.all(["700 20px 'Trade Gothic Bold Cond 20'","700 14px 'Trade Gothic Bold
 <header class="sys-header"><div class="sys-wrap sys-bar">
   <a class="sys-brand" href="#"><img class="docs-mark" src="icons/jonesco-library.svg" alt=""><span>Jonesco.library</span></a>
   <div class="hdr-r"><nav class="sys-nav"><button id="tf">Fonts</button><button id="tg">Graphics</button></nav>
+  <button class="sys-icon-btn localonly" id="hadd" type="button" hidden aria-label="Add fonts or graphics" data-tip="Add files"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button class="sys-icon-btn localonly" id="hpub" type="button" hidden aria-label="Publish online" data-tip="Publish online"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20V8M7 13l5-5 5 5M5 4h14"/></svg></button>
   <button class="sys-toggle" type="button" role="switch" aria-checked="false" id="theme"><span class="sys-toggle__track" aria-hidden="true"></span><span class="tl">Dark</span></button></div>
 </div></header>
 
@@ -282,10 +287,7 @@ const rd=(()=>{
 if(document.documentElement.classList.contains("home"))rd.start();
 </script>
 <div class="herob"><div class="sys-wrap hero"><div class="herorow"><div><h1 class="sys-display" id="hero">Fonts</h1><p class="sys-label" id="sub"></p>
-</div>
-  <div><div id="drop" class="off" role="button" tabindex="0" aria-label="Add fonts or graphics"><span class="sys-label" id="droplbl">Drop fonts, graphics or folders</span><small id="dropsm">Open with “Open Library.command” to add files</small></div>
-  <div id="dropmsg" aria-live="polite"></div>
-  <div class="pubrow localonly" id="pubrow" hidden><button class="sys-btn sys-btn--md sys-btn--ghost" id="pub" type="button"><span>Publish online</span><span class="plus">↑</span></button><span id="pubmsg" aria-live="polite"></span></div><input type="file" id="pick" multiple hidden></div></div></div>
+</div></div></div>
 </div>
 <nav class="sys-section-nav" aria-label="Library section"><div class="sys-wrap sys-nav"><a href="#fonts" id="hs-f" class="is-current" aria-current="page">Fonts</a><a href="#graphics" id="hs-g">Graphics</a></div></nav>
 <div class="bar"><div class="sys-wrap">
@@ -319,6 +321,19 @@ if(document.documentElement.classList.contains("home"))rd.start();
 <div id="list" class="grid"></div><div id="glist" class="grid" style="display:none"></div>
 <div id="fsent" style="height:1px"></div>
 <div id="more" style="display:none"><button class="sys-btn sys-btn--md sys-btn--ghost" id="morebtn">Show more</button></div></main>
+
+<section id="adlg" class="dlg localonly" role="dialog" aria-modal="true" aria-labelledby="atitle"><div class="dpanel dsmall"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="aclose">Close ✕</button></div></div>
+  <div class="sys-wrap"><h2 class="sys-display" id="atitle">Add to the library</h2><p class="meta sys-label">Fonts, graphics or whole folders</p>
+  <div id="drop" role="button" tabindex="0" aria-label="Choose fonts or graphics to add"><span class="sys-label">Drop files here</span><small>or click to choose</small></div><input type="file" id="pick" multiple hidden>
+  <div id="dropmsg" aria-live="polite"></div>
+  <div id="afollow" hidden><p>Added. Put it on library.jonesco.com too?</p><div class="btns"><button class="sys-btn sys-btn--md" id="afpub" type="button"><span>Publish online</span><span class="plus">↑</span></button><button class="sys-btn sys-btn--md sys-btn--ghost" id="afno" type="button">Not now</button></div></div>
+  </div></div></section>
+
+<section id="pdlg" class="dlg localonly" role="dialog" aria-modal="true" aria-labelledby="ptitle"><div class="dpanel dsmall"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="pclose">Close ✕</button></div></div>
+  <div class="sys-wrap"><h2 class="sys-display" id="ptitle">Publish online</h2><p class="meta sys-label">library.jonesco.com</p>
+  <p class="lead">Puts everything new in your library on the public, browse-only site. It goes live about a minute after the push.</p>
+  <div class="btns"><button class="sys-btn sys-btn--md" id="pub" type="button"><span>Publish</span><span class="plus">↑</span></button></div>
+  <div id="pubmsg" aria-live="polite"></div></div></div></section>
 
 <section id="gdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="gn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="gclose">Close ✕</button></div></div>
   <div class="sys-wrap"><h2 class="sys-display" id="gn"></h2><p class="meta sys-label" id="gm"></p>
@@ -445,10 +460,11 @@ $("tf").onclick=()=>{location.hash="fonts"};$("tg").onclick=()=>{location.hash="
 // A detail view gets its own history entry, so the browser Back button closes it and returns to the list instead of leaving for the overview
 const hasDlg=()=>history.state&&history.state.dlg;
 function dlgIn(){document.querySelectorAll(".dpanel").forEach(p=>p.scrollTop=0);if(!hasDlg())history.pushState({dlg:1},"")}
-function dlgOut(){$("dlg").classList.remove("on");$("gdlg").classList.remove("on");if(hasDlg())history.back()}   // hides at once, then drops the history entry the view added
+const closeAll=()=>document.querySelectorAll(".dlg").forEach(d=>d.classList.remove("on"));
+function dlgOut(){closeAll();if(hasDlg())history.back()}   // hides at once, then drops the history entry the view added
 if(hasDlg())history.replaceState(null,"")   // a reload leaves the old marker on the entry; clear it so Back never leaves the page
-$("dlg").onclick=e=>{if(e.target===$("dlg"))dlgOut()};$("gdlg").onclick=e=>{if(e.target===$("gdlg"))dlgOut()};
-addEventListener("popstate",()=>{if(!hasDlg()){$("dlg").classList.remove("on");$("gdlg").classList.remove("on")}});
+document.querySelectorAll(".dlg").forEach(d=>d.onclick=e=>{if(e.target===d)dlgOut()});["aclose","pclose"].forEach(i=>$(i).onclick=dlgOut);
+addEventListener("popstate",()=>{if(!hasDlg())closeAll()});
 addEventListener("keydown",e=>{if(e.key==="Escape")dlgOut()});
 
 // (the overview animation runs from its own early script, right after the overview markup)
@@ -456,7 +472,7 @@ addEventListener("keydown",e=>{if(e.key==="Escape")dlgOut()});
 
 // ---- Views: overview (home), #fonts, #graphics
 function setHome(on){document.body.classList.toggle("home",on);document.documentElement.classList.toggle("home",on);if(on){$("tf").removeAttribute("aria-current");$("tg").removeAttribute("aria-current");rd.start()}else rd.stop()}
-function route(){const r=location.hash.replace("#","");$("dlg").classList.remove("on");$("gdlg").classList.remove("on");
+function route(){const r=location.hash.replace("#","");closeAll();
   if(r==="fonts"){setHome(false);tab(false)}else if(r==="graphics"){setHome(false);tab(true)}else setHome(true)}
 addEventListener("hashchange",route);
 
@@ -472,14 +488,17 @@ function refreshAll(){fLangs();FONTS.sort((a,b)=>a.n.toLowerCase()<b.n.toLowerCa
 function merge(st){const rf=new Set(st.removed.fonts),rg=new Set(st.removed.gfx),hf=new Set(FONTS.map(f=>f.file)),hg=new Set(GFX.map(g=>g.p));
   st.fonts.forEach(f=>{if(!hf.has(f.file))FONTS.push(f)});st.gfx.forEach(g=>{if(!hg.has(g.p))GFX.push(g)});
   FONTS=FONTS.filter(f=>!rf.has(f.file));GFX=GFX.filter(g=>!rg.has(g.p));refreshAll()}
-function dropState(on){SERVER=on;$("pubrow").hidden=!on;$("drop").classList.toggle("off",!on);
-  $("dropsm").textContent=on?"or click to choose files":"Open with “Open Library.command” to add files"}
+function dropState(on){SERVER=on;$("hadd").hidden=!on;$("hpub").hidden=!on}
+function openAdd(){if(!SERVER||$("adlg").classList.contains("on"))return;closeAll();$("afollow").hidden=true;$("dropmsg").textContent="";$("adlg").classList.add("on");dlgIn()}
+function openPub(){if(!SERVER)return;closeAll();$("pdlg").classList.add("on");dlgIn();pubPoll()}
+$("hadd").onclick=openAdd;$("hpub").onclick=()=>{$("pubmsg").textContent="";openPub()};
 if(!ONLINE)fetch("/api/state").then(r=>r.ok?r.json():null).then(st=>{if(st){dropState(true);merge(st)}}).catch(()=>{});
 // Publish online: runs tools/publish.py through the launcher, then shows its progress here
 async function pubPoll(){const r=await fetch("/api/publish").then(r=>r.json()).catch(()=>null);if(!r)return;
   $("pubmsg").textContent=r.message||"";$("pub").disabled=r.state==="running";if(r.state==="running")setTimeout(pubPoll,1500)}
-$("pub").onclick=async()=>{$("pub").disabled=true;$("pubmsg").textContent="Starting...";
-  await fetch("/api/publish",{method:"POST"}).catch(()=>{$("pubmsg").textContent="Could not reach the launcher."});pubPoll()};
+async function startPub(){$("pub").disabled=true;$("pubmsg").textContent="Starting...";
+  await fetch("/api/publish",{method:"POST"}).catch(()=>{$("pubmsg").textContent="Could not reach the launcher."});pubPoll()}
+$("pub").onclick=startPub;$("afpub").onclick=()=>{openPub();startPub()};$("afno").onclick=dlgOut;
 async function walk(en,path){
   if(en.isFile)return[await new Promise(r=>en.file(f=>r({file:f,rel:path+en.name}),()=>r(null)))].filter(Boolean);
   const rd=en.createReader();let all=[];for(;;){const b=await new Promise(r=>rd.readEntries(r,()=>r([])));if(!b.length)break;all.push(...b)}
@@ -488,12 +507,12 @@ async function addAll(list){
   const ok=list.filter(x=>!x.file.name.startsWith(".")&&OKEXT.has(x.file.name.split(".").pop().toLowerCase())),ignored=list.length-ok.length;
   ok.sort((p,q)=>(/\[|variable/i.test(p.file.name)?1:0)-(/\[|variable/i.test(q.file.name)?1:0));   // variable fonts ("Name[wght].ttf", "Name-VariableFont_wght.ttf") go last, so the separate weights dropped with them are added first and not counted twice
   if(!ok.length){$("dropmsg").textContent="Nothing to add: no fonts or graphics of a supported type.";return}
-  const cnt={added:0,skipped:0,rejected:0},notes=[];
+  $("afollow").hidden=true;const cnt={added:0,skipped:0,rejected:0},notes=[];
   for(let i=0;i<ok.length;i++){$("dropmsg").textContent="Adding "+(i+1)+" of "+ok.length+"…";
     const x=ok[i],r=await fetch("/api/add?name="+encodeURIComponent(x.rel),{method:"POST",body:x.file}).then(r=>r.json()).catch(()=>({status:"rejected",reason:"launcher not reachable"}));
     const key=r.variable?"covered":r.status;cnt[key]=(cnt[key]||0)+(r.status==="added"&&r.items?r.items.length:1);
     if(r.status==="added"){(r.kind==="font"?FONTS:GFX).push(...(r.items||[r.item]))}else notes.push(x.rel+": "+(r.reason||r.status))}
-  refreshAll();
+  refreshAll();if(cnt.added)$("afollow").hidden=false;
   const parts=[];if(cnt.added)parts.push("Added "+cnt.added);if(cnt.skipped)parts.push(cnt.skipped+" already there");if(cnt.covered)parts.push(cnt.covered+" variable "+(cnt.covered>1?"fonts":"font")+" covered by the static files");if(cnt.rejected)parts.push(cnt.rejected+" rejected");if(ignored)parts.push(ignored+" ignored (other types)");
   const m=$("dropmsg");m.textContent=(parts.join(" · ")||"Nothing added")+".";
   if(notes.length){const d=document.createElement("details"),s=document.createElement("summary"),u=document.createElement("ul");s.textContent="Details";notes.forEach(n=>{const l=document.createElement("li");l.textContent=n;u.append(l)});d.append(s,u);m.append(d)}}
@@ -501,11 +520,11 @@ $("drop").onclick=()=>{if(SERVER)$("pick").click()};
 $("drop").onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&SERVER){e.preventDefault();$("pick").click()}};
 $("pick").onchange=()=>{const l=[...$("pick").files].map(f=>({file:f,rel:f.name}));$("pick").value="";if(l.length)addAll(l)};
 let dragN=0;
-addEventListener("dragenter",e=>{e.preventDefault();dragN++;if(SERVER)$("drop").classList.add("over")});
+addEventListener("dragenter",e=>{e.preventDefault();dragN++;if(SERVER&&[...(e.dataTransfer.types||[])].includes("Files")){openAdd();$("drop").classList.add("over")}});
 addEventListener("dragleave",e=>{dragN=Math.max(0,dragN-1);if(!dragN)$("drop").classList.remove("over")});
 addEventListener("dragover",e=>e.preventDefault());
 addEventListener("drop",async e=>{e.preventDefault();dragN=0;$("drop").classList.remove("over");
-  if(!SERVER){$("dropmsg").textContent="Open the library with “Open Library.command” to add files.";return}
+  if(!SERVER)return;openAdd();
   const ens=[...e.dataTransfer.items].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);   // read entries before any await
   const list=(await Promise.all(ens.map(en=>walk(en,"")))).flat();addAll(list)});
 route();
