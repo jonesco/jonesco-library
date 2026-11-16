@@ -85,7 +85,7 @@ _rm = json.load(open(os.path.join(root, "data", "removed-items.json"))) if os.pa
 _ad = json.load(open(os.path.join(root, "data", "added.json"))) if os.path.exists(os.path.join(root, "data", "added.json")) else {"fonts": [], "gfx": []}
 fonts = [f for f in fonts if f["file"] not in set(_rm["fonts"])]
 json.dump([f["f"] for f in fonts], open(os.path.join(root, "data", "fontnames.json"), "w"))   # the drop box uses this to skip duplicates
-fonts += [f for f in _ad["fonts"] if f["file"] not in set(_rm["fonts"])]
+fonts += [f for f in _ad["fonts"] if f["file"] not in set(_rm["fonts"]) and os.path.exists(os.path.join(root, f["file"]))]   # an added font whose file is gone is left out rather than shown blank
 sys.path.insert(0, here)
 from traits import traits                  # category, weight, width, slant, scripts: what each font file says about itself
 tp = os.path.join(root, "data", "traits.cache")
