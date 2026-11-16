@@ -29,6 +29,7 @@ def add_font(name, data):
     ext = os.path.splitext(name)[1].lower()
     try: t = TTFont(io.BytesIO(data), lazy=True); cm = t.getBestCmap() or {}
     except Exception as e: return {"status": "rejected", "reason": "not a readable font"}
+    if "fvar" in t: return _add_variable(name, data, t)
     nm = lambda i: (t["name"].getDebugName(i) or "").strip() if "name" in t else ""
     full, ps = nm(4), nm(6)
     if not (full or ps): return {"status": "rejected", "reason": "has no name"}
@@ -53,6 +54,31 @@ def add_font(name, data):
         if m: item["x"] = m
         a["fonts"].append(item); jsave(D("added.json"), a)
     return {"status": "added", "kind": "font", "item": item}
+
+def _add_variable(name, data, t):
+    """A variable font holds many weights in one file; its PostScript name is only that of the default weight, which used to make the
+    first one look like a duplicate of that weight's static file. Each named style becomes its own static font instead."""
+    from fontTools.varLib import instancer
+    nm = lambda f, i: (f["name"].getDebugName(i) or "").strip()
+    fam = nm(t, 16) or nm(t, 1)
+    items, skipped = [], 0
+    for inst in t["fvar"].instances:
+        sub = nm(t, inst.subfamilyNameID)
+        if not (fam and sub): continue
+        try:
+            f = instancer.instantiateVariableFont(TTFont(io.BytesIO(data)), dict(inst.coordinates), inplace=False)
+            full, ps = "%s %s" % (fam, sub), "%s-%s" % (fam.replace(" ", ""), sub.replace(" ", ""))
+            for rec in list(f["name"].names):
+                if rec.nameID in (1, 2, 3, 4, 6, 16, 17, 25): f["name"].removeNames(nameID=rec.nameID)
+            for pid, eid, lid in ((3, 1, 0x409), (1, 0, 0)):
+                for i, v in ((1, fam), (2, "Regular"), (3, ps), (4, full), (6, ps), (16, fam), (17, sub)): f["name"].setName(v, i, pid, eid, lid)
+            buf = io.BytesIO(); f.save(buf)
+            r = add_font(ps + ".ttf", buf.getvalue())
+            if r["status"] == "added": items += r.get("items") or [r["item"]]
+            else: skipped += 1
+        except Exception: continue
+    if items: return {"status": "added", "kind": "font", "item": items[-1], "items": items}
+    return {"status": "skipped", "reason": "every weight in this variable font is already in the library"} if skipped else {"status": "rejected", "reason": "variable font with no named styles"}
 
 def _gs(src, out, r):
     tmp = tempfile.mktemp(suffix=".png")
