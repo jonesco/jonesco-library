@@ -117,7 +117,8 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
 #ftog{display:none}
 .freset{font:700 13px/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:8px 4px}.freset:hover{color:var(--accent)}.freset[hidden]{display:none}
 .gc{display:none;flex-wrap:wrap;gap:12px;align-items:center}
-.grid{display:grid;gap:0;background:var(--paper);border-left:var(--thin)}
+main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first row */
+.grid{display:grid;gap:0;background:var(--paper);border-left:var(--thin);border-top:var(--thin)}
 .grid>*{border-right:var(--thin);border-bottom:var(--thin)}
 #list{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
 .card{background:var(--paper);padding:20px;cursor:pointer;min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
@@ -303,8 +304,8 @@ function open(f){load(f);const ff=`'F_${f.f}',sans-serif`;
   $("fin").onclick=ONLINE?()=>dl(enc(f.file),f.f+f.file.slice(f.file.lastIndexOf("."))):()=>reveal(LIB+f.file,$("note"));
   $("fin").style.display=LITE?"none":"";$("fino").onclick=()=>reveal(f.s,$("note"));$("fino").style.display=(!ONLINE&&f.s)?"":"none";$("cpp").style.display=ONLINE?"none":"";$("note").textContent="";
   $("cpn").onclick=()=>copyText(f.n);$("cpp").onclick=()=>copyText(f.file);
-  $("dlg").classList.add("on")}
-$("close").onclick=()=>$("dlg").classList.remove("on");
+  $("dlg").classList.add("on");dlgIn()}
+$("close").onclick=dlgOut;
 ["q","fsty","fthk","flang","comp","sort","size"].forEach(i=>$(i).oninput=render);fLangs();
 $("sample").oninput=()=>document.querySelectorAll(".sp:not([data-p])").forEach(s=>s.textContent=$("sample").value);
 render();
@@ -331,8 +332,8 @@ function gOpen(r){$("gn").textContent=r.n;$("gm").textContent=r.c+" · ."+r.ext;
   const ap=r.a||BASE+r.p,hasOrig=!r.z;
   $("gfin").textContent=ONLINE?(hasOrig?"Download original":"Download preview"):"Show in Finder";
   $("gfin").onclick=ONLINE?()=>{const nm=r.n+"."+(hasOrig?r.ext:(r.v||r.t).split(".").pop());dl(enc(hasOrig?"originals/"+r.p:(r.v||r.t)),nm)}:()=>reveal(ap,$("gnote"));
-  $("gcp").style.display=ONLINE?"none":"";$("gfin").style.display=LITE?"none":"";$("gnote").textContent="";$("gcp").onclick=()=>copyText(ap);$("gdlg").className="dlg on"}
-$("gclose").onclick=()=>$("gdlg").classList.remove("on");$("morebtn").onclick=gMore;
+  $("gcp").style.display=ONLINE?"none":"";$("gfin").style.display=LITE?"none":"";$("gnote").textContent="";$("gcp").onclick=()=>copyText(ap);$("gdlg").className="dlg on";dlgIn()}
+$("gclose").onclick=dlgOut;$("morebtn").onclick=gMore;
 $("gprev").onclick=()=>{$("gprev").setAttribute("aria-checked",$("gprev").getAttribute("aria-checked")!=="true");gExts();gFilter()};
 ["gq","gext"].forEach(i=>$(i).oninput=gFilter);$("gtop").oninput=()=>{gExts();gFilter()};
 function tab(g){onGfx=g;$("hs-f").classList.toggle("is-current",!g);$("hs-g").classList.toggle("is-current",g);$("hs-f").toggleAttribute("aria-current",!g);$("hs-g").toggleAttribute("aria-current",g);$("tf").toggleAttribute("aria-current",!g);$("tg").toggleAttribute("aria-current",g);
@@ -341,7 +342,12 @@ function tab(g){onGfx=g;$("hs-f").classList.toggle("is-current",!g);$("hs-g").cl
   document.querySelector(".gc").style.display=g?"flex":"none";$("more").style.display=g&&gShown<gRows.length?"block":"none";
   if(g){if(!gRows.length)gFilter();else setSub(gRows.length,GFX.length,"graphics")}else render()}
 $("tf").onclick=()=>{location.hash="fonts"};$("tg").onclick=()=>{location.hash="graphics"};
-addEventListener("keydown",e=>{if(e.key==="Escape"){$("dlg").classList.remove("on");$("gdlg").classList.remove("on")}});
+// A detail view gets its own history entry, so the browser Back button closes it and returns to the list instead of leaving for the overview
+const hasDlg=()=>history.state&&history.state.dlg;
+function dlgIn(){if(!hasDlg())history.pushState({dlg:1},"")}
+function dlgOut(){if(hasDlg())history.back();else{$("dlg").classList.remove("on");$("gdlg").classList.remove("on")}}
+addEventListener("popstate",()=>{if(!hasDlg()){$("dlg").classList.remove("on");$("gdlg").classList.remove("on")}});
+addEventListener("keydown",e=>{if(e.key==="Escape")dlgOut()});
 
 // ---- Overview: Gray-Scott reaction-diffusion. Two simulated chemicals form coral and fingerprint patterns; it keeps growing when motion is on.
 const rd=(()=>{
