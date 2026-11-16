@@ -39,7 +39,7 @@
 .herob{background:var(--hb);color:var(--hf)}
 body.online #drop,body.online #dropmsg,body.online .localonly{display:none}
 /* Overview: a full-screen reaction-diffusion canvas with two links. Hides everything else while on the home view. */
-#home{display:none;position:relative;height:calc(100vh - 64px);height:calc(100dvh - 64px);min-height:440px;background:var(--paper);overflow:hidden}
+#home{display:none;position:relative;height:calc(100vh - 64px);height:calc(100dvh - 64px);min-height:440px;background:var(--highlight);overflow:hidden}
 body.home #home{display:block}
 body.home .herob,body.home .bar,body.home main,body.home .sys-footer{display:none}
 #rd{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
@@ -271,8 +271,17 @@ addEventListener("keydown",e=>{if(e.key==="Escape"){$("dlg").classList.remove("o
 
 // ---- Overview: Gray-Scott reaction-diffusion. Two simulated chemicals form coral and fingerprint patterns; it keeps growing when motion is on.
 const rd=(()=>{
-  const cv=$("rd"),ctx=cv.getContext("2d",{alpha:false}),reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const F=.0545,K=.062,DU=1,DV=.5;let W=0,H=0,u,v,u2,v2,img,raf=0,on=false,steps=12,tm;
+  // Gray-Scott on a coarse grid (CPU), drawn by WebGL2 at the screen's full pixel density: the field is sampled with linear
+  // filtering and thresholded with derivative-based anti-aliasing, so the edges stay sharp at any size. Falls back to a 2D canvas.
+  const cv=$("rd"),reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const gl=cv.getContext("webgl2",{alpha:false,antialias:false}),ctx=gl?null:cv.getContext("2d",{alpha:false});
+  const F=.0545,K=.062,DU=1,DV=.5,BG=[1,.898,0],FG=[0,0,0];   // yellow field, black pattern (the brand highlight), in both themes
+  let W=0,H=0,u,v,u2,v2,u8,img,raf=0,on=false,steps=10,tm,prog,tex;
+  if(gl){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o};
+    prog=gl.createProgram();
+    gl.attachShader(prog,sh(gl.VERTEX_SHADER,"#version 300 es\nout vec2 uv;void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);uv=vec2(p.x,1.-p.y);gl_Position=vec4(p*2.-1.,0,1);}"));
+    gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,"#version 300 es\nprecision highp float;in vec2 uv;uniform sampler2D T;uniform vec3 bg,fg;out vec4 o;void main(){float v=texture(T,uv).r;float w=max(fwidth(v)*.7,.002);float s=smoothstep(.48-w,.48+w,v);o=vec4(mix(bg,fg,s),1.);}"));
+    gl.linkProgram(prog);gl.useProgram(prog);gl.uniform3fv(gl.getUniformLocation(prog,"bg"),BG);gl.uniform3fv(gl.getUniformLocation(prog,"fg"),FG);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1)}
   function seed(cx,cy,r){for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(dx*dx+dy*dy>r*r)continue;const i=((cy+dy+H)%H)*W+(cx+dx+W)%W;u[i]=.5;v[i]=1}}
   function step(){
     for(let y=0;y<H;y++){const yu=(y?y-1:H-1)*W,yd=(y<H-1?y+1:0)*W,yc=y*W;
@@ -281,19 +290,31 @@ const rd=(()=>{
         const lv=-b+.2*(v[yc+xl]+v[yc+xr]+v[yu+x]+v[yd+x])+.05*(v[yu+xl]+v[yu+xr]+v[yd+xl]+v[yd+xr]);
         const r=a*b*b;u2[i]=a+DU*lu-r+F*(1-a);v2[i]=b+DV*lv+r-(F+K)*b}}
     let t=u;u=u2;u2=t;t=v;v=v2;v2=t}
-  function draw(){if(!img)return;const dark=document.documentElement.dataset.theme==="dark",bg=dark?0:255,fg=dark?255:0,d=img.data;
-    for(let i=0,j=0,n=W*H;i<n;i++,j+=4){let s=(v[i]-.08)/.14;s=s<0?0:s>1?1:s;s=s*s*(3-2*s);d[j]=d[j+1]=d[j+2]=bg+(fg-bg)*s;d[j+3]=255}
+  function draw(){if(!u)return;
+    if(gl){for(let i=0,n=W*H;i<n;i++){const s=v[i]*3.2;u8[i]=s<0?0:s>1?255:s*255|0}
+      gl.bindTexture(gl.TEXTURE_2D,tex);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,W,H,gl.RED,gl.UNSIGNED_BYTE,u8);gl.drawArrays(gl.TRIANGLES,0,3);return}
+    const d=img.data,b0=[255,229,0];                                 // 2D fallback: same colors, soft edges
+    for(let i=0,j=0,n=W*H;i<n;i++,j+=4){let s=(v[i]-.08)/.14;s=s<0?0:s>1?1:s;s=s*s*(3-2*s);d[j]=b0[0]*(1-s);d[j+1]=b0[1]*(1-s);d[j+2]=0;d[j+3]=255}
     ctx.putImageData(img,0,0)}
   function init(){const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
-    const cell=Math.max(3,Math.ceil(Math.sqrt(w*h/(matchMedia("(pointer:coarse)").matches?45000:90000))));   // fewer, bigger cells on phones
-    W=Math.ceil(w/cell);H=Math.ceil(h/cell);cv.width=W;cv.height=H;const n=W*H;
-    u=new Float32Array(n).fill(1);v=new Float32Array(n);u2=new Float32Array(n);v2=new Float32Array(n);img=ctx.createImageData(W,H);
+    const cell=Math.max(2,Math.sqrt(w*h/(matchMedia("(pointer:coarse)").matches?60000:150000)));   // finer grid; coarser on phones
+    W=Math.ceil(w/cell);H=Math.ceil(h/cell);const n=W*H;
+    u=new Float32Array(n).fill(1);v=new Float32Array(n);u2=new Float32Array(n);v2=new Float32Array(n);u8=new Uint8Array(n);
+    if(gl){const dpr=Math.min(devicePixelRatio||1,2);cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);gl.viewport(0,0,cv.width,cv.height);
+      tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texImage2D(gl.TEXTURE_2D,0,gl.R8,W,H,0,gl.RED,gl.UNSIGNED_BYTE,null);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE)}
+    else{cv.width=W;cv.height=H;img=ctx.createImageData(W,H)}
     for(let k=0,m=Math.round(n/1400);k<m;k++)seed(Math.random()*W|0,Math.random()*H|0,2+(Math.random()*3|0));
-    for(let k=0;k<(reduce?600:250);k++)step();draw()}
+    for(let k=0;k<(reduce?900:350);k++)step();draw()}
   function frame(){const t0=performance.now();for(let k=0;k<steps;k++)step();draw();const ms=performance.now()-t0;
     if(ms>14&&steps>2)steps--;else if(ms<8&&steps<16)steps++;raf=requestAnimationFrame(frame)}
-  function paint(e){if(!u)return;const r=cv.getBoundingClientRect();seed(Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H),3)}
-  cv.addEventListener("pointermove",e=>{if(on)paint(e)});cv.addEventListener("pointerdown",paint);
+  function paint(e){if(!u)return;const r=cv.getBoundingClientRect();seed(Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H),4)}
+  function cellAt(e){const r=cv.getBoundingClientRect();return[Math.floor((e.clientX-r.left)/r.width*W),Math.floor((e.clientY-r.top)/r.height*H)]}
+  function burst(e){if(!u)return;const[cx,cy]=cellAt(e);seed(cx,cy,9);                       // a click: a big drop, plus a ring of satellites that grow into it
+    for(let k=0,n=8,a0=Math.random()*6.28;k<n;k++){const a=a0+k*6.2832/n,d=17+Math.random()*10;seed(Math.round(cx+Math.cos(a)*d),Math.round(cy+Math.sin(a)*d),2+(Math.random()*2|0))}
+    if(reduce||!raf){for(let k=0;k<80;k++)step();draw()}}                                // with motion off, grow it a little so the click still shows
+  cv.addEventListener("pointermove",e=>{if(on&&e.buttons!==0||on&&e.pointerType==="mouse")paint(e)});cv.addEventListener("pointerdown",burst);
   addEventListener("resize",()=>{if(on){clearTimeout(tm);tm=setTimeout(()=>{init();if(reduce)draw()},200)}});
   document.addEventListener("visibilitychange",()=>{if(!on||reduce)return;if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf)raf=requestAnimationFrame(frame)});
   return{start(){on=true;init();if(!reduce&&!raf)raf=requestAnimationFrame(frame)},stop(){on=false;cancelAnimationFrame(raf);raf=0},draw};

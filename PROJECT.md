@@ -5,7 +5,7 @@ A private library of fonts and graphics collected since college, with a viewer t
 ## The library
 - **Fonts:** about 13,000 OpenType fonts, converted from classic Mac Type 1 and TrueType suitcases, in one flat `fonts/` folder.
 - **Graphics:** about 3,700 EPS clip art, textures and images, with thumbnails (`thumbs/`) and large previews (`previews/`).
-- **Overview:** the page opens on a full-screen reaction-diffusion canvas (Gray-Scott, drawn in canvas, nothing to load) with links to Fonts and Graphics. Views are `#fonts` and `#graphics`; no hash is the overview. It runs on phones too: 44px targets, one-column fonts, two-column graphics.
+- **Overview:** the page opens on a full-screen reaction-diffusion field, black on yellow (Gray-Scott on a coarse grid, drawn by WebGL2 at the screen's full pixel density so the edges stay sharp; a 2D canvas is the fallback; nothing to load). Dragging paints new growth and a click drops a burst of it. with links to Fonts and Graphics. Views are `#fonts` and `#graphics`; no hash is the overview. It runs on phones too: 44px targets, one-column fonts, two-column graphics.
 - **Viewer:** one page, `index.html`, built from `tools/viewer_template.html`. Jonesco system 3.5.0 (a copy in `system/` for offline use; online it links the pinned design.jonesco.com version). Light and dark mode.
 - **Local mode** (opened through the launcher): Show in Finder, drag-and-drop adding of fonts, graphics and folders. There is no Remove button on purpose; removals are done deliberately with `tools/pipeline.remove()`.
 - **Online mode** (library.jonesco.com): read-only; Download instead of Show in Finder. Preview locally with `index.html?online`.
