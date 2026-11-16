@@ -142,7 +142,8 @@ main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first ro
 .loading .bar::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;background:var(--accent);animation:ld 1s ease-in-out infinite alternate}
 @keyframes ld{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
 @media (prefers-reduced-motion:reduce){.loading .bar::after{animation:none;width:100%}}
-.empty{padding:56px 0;color:var(--muted)}
+.empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:72px 24px;border-right:var(--thin);border-bottom:var(--thin)}
+.empty h3{margin:0;font-size:var(--size-section)}.empty p{margin:0;max-width:44ch;color:var(--muted)}.empty .sys-btn{margin-top:12px}
 #more{padding:32px 0;text-align:center}
 /* Detail views are modals: a dimmed page behind, one bordered square-cornered panel that scrolls on its own. Full screen on phones. */
 .dlg{position:fixed;inset:0;background:rgb(0 0 0/.65);display:none;z-index:20;align-items:center;justify-content:center;padding:40px 24px}.dlg.on{display:flex}
@@ -366,6 +367,13 @@ $("wchips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b
 $("chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b.dataset.k;fcat.has(k)?fcat.delete(k):fcat.add(k);b.setAttribute("aria-pressed",fcat.has(k));render()};
 function fLangs(){const have=LANGS.filter(([bit])=>FONTS.some(f=>f.l&bit)),cur=$("flang").value;     // only scripts this library really has
   $("flang").innerHTML='<option value="">Any language</option>'+have.map(([bit,l])=>`<option value="${bit}">${l}</option>`).join("");$("flang").value=have.some(([b])=>String(b)===cur)?cur:""}
+// Shown when a search or filters leave nothing: says what was asked for and offers one way out
+function emptyState(kind,q,n,clear){const d=document.createElement("div");d.className="empty";
+  const h=document.createElement("h3");h.className="sys-display";h.textContent="No "+kind+" match";
+  const p=document.createElement("p");const bits=[];if(q)bits.push("“"+q+"”");if(n)bits.push(n+(n>1?" filters":" filter"));
+  p.textContent=bits.length?"Nothing fits "+bits.join(" with ")+". Try a shorter search or fewer filters.":"There is nothing to show yet.";
+  const b=document.createElement("button");b.className="sys-btn sys-btn--md";b.type="button";b.innerHTML="<span>Clear "+(q&&n?"search and filters":q?"search":"filters")+'</span><span class="plus">×</span>';b.onclick=clear;
+  d.append(h,p);if(bits.length)d.append(b);return d}
 function fActive(){return fcat.size+fw.size+["fsty","fthk","flang","comp"].filter(i=>$(i).value).length}
 function render(){
   const q=$("q").value.toLowerCase(),sty=$("fsty").value,thk=$("fthk").value,lang=+$("flang").value||0,cp=$("comp").value,sort=$("sort").value;
@@ -373,7 +381,7 @@ function render(){
   if(sort==="g")rows.sort((a,b)=>b[0].g-a[0].g);else if(sort==="w")rows.sort((a,b)=>a[0].w-b[0].w||(a[0].n<b[0].n?-1:1));else if(sort==="r")rows.sort((a,b)=>(a[0].r=a[0].r||Math.random())-(b[0].r=b[0].r||Math.random()));
   const n=fActive();$("fcount").textContent=n?" ("+n+")":"";$("freset").hidden=!n;
   list.style.setProperty("--sz",$("size").value+"px");
-  list.innerHTML=rows.length?"":'<div class="empty">No fonts match these filters.</div>';
+  list.innerHTML="";if(!rows.length)list.append(emptyState("fonts",$("q").value.trim(),fActive(),()=>{$("q").value="";fReset()}));
   fRows=rows;fShown=0;$("loading").style.display="none";addFonts();
   if(!onGfx)setSub(rows.length,FONTS.length,"fonts");
 }
@@ -408,7 +416,8 @@ function gExts(){ // only file types that have items under the current collectio
 gExts();
 function gFilter(){const q=$("gq").value.toLowerCase(),t=$("gtop").value,e=$("gext").value,pv=$("gprev").getAttribute("aria-checked")==="true";
   gRows=GFX.filter(g=>(!q||g.p.toLowerCase().includes(q))&&(!t||g.top===t)&&(!e||g.ext===e)&&(!pv||g.t));
-  $("glist").innerHTML="";gShown=0;gMore();if(onGfx)setSub(gRows.length,GFX.length,"graphics")}
+  $("glist").innerHTML="";gShown=0;gMore();if(onGfx)setSub(gRows.length,GFX.length,"graphics")
+  if(!gRows.length)$("glist").append(emptyState("graphics",$("gq").value.trim(),(t?1:0)+(e?1:0),()=>{$("gq").value="";$("gtop").value="";$("gext").value="";gExts();gFilter()}))}
 function gMore(){const g=$("glist");gRows.slice(gShown,gShown+PAGE).forEach(r=>{const d=document.createElement("div");d.className="gc2";
   const th=document.createElement("div");th.className="th";
   if(r.t){const im=new Image();im.loading="lazy";im.src=r.t;im.alt=r.n;if(r.bw)im.className="bw";th.append(im)}else th.innerHTML='<span class="np">No preview</span>';
