@@ -486,7 +486,7 @@ async function walk(en,path){
   return(await Promise.all(all.map(e=>walk(e,path+en.name+"/")))).flat()}
 async function addAll(list){
   const ok=list.filter(x=>!x.file.name.startsWith(".")&&OKEXT.has(x.file.name.split(".").pop().toLowerCase())),ignored=list.length-ok.length;
-  ok.sort((p,q)=>(p.file.name.includes("[")?1:0)-(q.file.name.includes("[")?1:0));   // variable fonts ("Name[wght].ttf") go last, so the separate weights dropped with them are added first and not counted twice
+  ok.sort((p,q)=>(/\[|variable/i.test(p.file.name)?1:0)-(/\[|variable/i.test(q.file.name)?1:0));   // variable fonts ("Name[wght].ttf", "Name-VariableFont_wght.ttf") go last, so the separate weights dropped with them are added first and not counted twice
   if(!ok.length){$("dropmsg").textContent="Nothing to add: no fonts or graphics of a supported type.";return}
   const cnt={added:0,skipped:0,rejected:0},notes=[];
   for(let i=0;i<ok.length;i++){$("dropmsg").textContent="Adding "+(i+1)+" of "+ok.length+"…";

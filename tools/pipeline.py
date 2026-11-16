@@ -38,8 +38,9 @@ def add_font(name, data):
     f = ps or safe(full)
     with LOCK:
         a = jload(D("added.json"), {"fonts": [], "gfx": []})
-        have = {x.lower() for x in jload(D("fontnames.json"), [])} | {x["f"].lower() for x in a["fonts"]}
-        if f.lower() in have: return {"status": "skipped", "reason": "already in the library"}
+        base = {x.lower() for x in jload(D("fontnames.json"), [])}; added = {x["f"].lower() for x in a["fonts"]}
+        if f.lower() in added: return {"status": "skipped", "reason": "same style as a font you added already (a variable font and its static files hold the same weights)"}
+        if f.lower() in base: return {"status": "skipped", "reason": "already in the library"}
         h = hashlib.md5(data).hexdigest()[:6]; rel = "fonts/%s-%s%s" % (safe(f), h, ext)
         open(os.path.join(ROOT, rel), "wb").write(data)
         n = full if " " in full else pretty(full or ps)
