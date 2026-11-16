@@ -46,10 +46,9 @@
 [data-theme=dark] .sys-header .sys-toggle__track::after{background:var(--ink)}
 [data-theme=dark] .sys-header .sys-toggle[aria-checked="true"] .sys-toggle__track::after{background:var(--paper)}
 [data-theme=dark] .sys-header .sys-toggle:hover{color:var(--accent)}
-[data-theme=dark] .bar{border-bottom-color:var(--line-dark)}
 [data-theme=dark] .grid,[data-theme=dark] .grid>*{border-color:var(--line-dark)}
 [data-theme=dark] .artbox{border-color:var(--line-dark)}
-[data-theme=dark] .bar .sys-controls{--track:#444}
+[data-theme=dark] .bar .sys-controls{--track:#c9c7c1}
 [data-theme=dark] .sys-input::-webkit-search-cancel-button{filter:invert(1)}
 [data-theme=dark] .sys-input[type="search"]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%23fff' stroke-width='2'%3E%3Ccircle cx='6.5' cy='6.5' r='5'/%3E%3Cpath d='M10.2 10.2L15 15'/%3E%3C/svg%3E")}
 [data-theme=dark] select.sys-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23fff' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E")}
@@ -99,13 +98,15 @@ body>.sys-section-nav .sys-nav{display:flex}
 #dropmsg{max-width:360px;font-size:14px;margin-top:8px;color:var(--hm)}#dropmsg details{margin-top:4px}#dropmsg summary{cursor:pointer;color:var(--hf);font-family:var(--font-label);font-weight:700;font-size:13px;letter-spacing:var(--track-label);text-transform:uppercase}
 #dropmsg ul{margin:6px 0 0;padding-left:18px;max-height:160px;overflow:auto}
 .btns .sys-btn.warn{background:var(--accent);border-color:var(--accent);color:var(--paper)}
-.bar{position:sticky;top:116px;z-index:9;background:var(--paper);border-bottom:var(--thin)}
+/* The filter bar is the same color as the header and title band (black in light, white in dark), as on Style specimens; its fields reverse */
+.bar{position:sticky;top:116px;z-index:9;background:var(--hb);color:var(--hf);--ink:var(--hf);--paper:var(--hb);--thin:var(--thin-w) solid var(--hf)}
+.bar .sys-input{background-color:var(--hf);color:var(--hb)}.bar .sys-input::placeholder{color:#777}.bar .sys-input:focus{border-color:var(--highlight)}
 .bar .sys-wrap{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding-top:14px;padding-bottom:14px}
 .bar .sys-input{width:auto}
 .bar [type=search]{width:240px}.bar #sample{flex:1;min-width:220px}
 select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;background-position:right 12px center;background-size:12px 8px;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E")}
-.bar .sys-controls{display:flex;align-items:center;gap:10px;background:none;color:var(--ink);padding:0;border:0;--track:#c9c7c1}.bar .sys-controls label{font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase}
+.bar .sys-controls{display:flex;align-items:center;gap:10px;background:none;color:var(--ink);padding:0;border:0;--track:#555}.bar .sys-controls label{font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase}
 /* Font filters, after Google Fonts: category chips, a few labeled dropdowns, sort, reset; on phones they fold behind one button */
 .fpanel{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding-top:4px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
