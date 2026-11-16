@@ -114,7 +114,8 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
 .chip:hover{color:var(--accent)}.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper)}.chip[aria-pressed="true"]:hover{color:var(--paper)}
 .fsel{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.fsel .sys-input{width:auto;height:36px;font-size:15px}
 #sortrow{margin-left:auto}
-#ftog{display:none}
+#ftog{display:inline-flex;align-items:center;gap:10px;flex:none}#ftog .chev{transition:transform var(--quick)}#ftog[aria-expanded="true"] .chev{transform:rotate(180deg)}#fcount:empty{display:none}
+.fpanel{display:none}.fpanel.open{display:flex}   /* filters fold away on every screen size; the button is the first control in the bar */
 .freset{font:700 13px/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:8px 4px}.freset:hover{color:var(--accent)}.freset[hidden]{display:none}
 .gc{display:none;flex-wrap:wrap;gap:12px;align-items:center}
 main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first row */
@@ -190,8 +191,9 @@ main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first ro
 @media (max-width:560px){.hdr-r .sys-toggle .tl{display:none}}
 @media (max-width:440px){.sys-brand{gap:8px}.sys-brand span{font-size:16px;letter-spacing:0}.hdr-r{gap:10px}.sys-nav{gap:12px}.sys-nav button{font-size:13px;letter-spacing:.02em}}   /* the name stays visible down to small iPhones */
 @media (max-width:700px){
-  #ftog{display:inline-flex}#fcount:empty{display:none}
-  .fpanel{display:none;padding-top:8px}.fpanel.open{display:flex}
+  .fpanel{padding-top:8px}
+  /* phone: search and sample on their own rows, then Filters beside the size slider */
+  #q{order:1}#sample{order:2}#ftog{order:3;height:44px}.bar .sys-controls{order:4;flex:1 1 0;width:auto;min-width:0}.fpanel{order:5}
   .chip{height:44px}.fsel{width:100%}.fsel .sys-input{flex:1 1 140px;min-width:0;height:44px}#sortrow{margin-left:0;width:100%}
 }
 @media (max-width:349px){.sys-brand span{display:none}}
@@ -213,10 +215,10 @@ main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first ro
 <nav class="sys-section-nav" aria-label="Library section"><div class="sys-wrap sys-nav"><a href="#fonts" id="hs-f" class="is-current" aria-current="page">Fonts</a><a href="#graphics" id="hs-g">Graphics</a></div></nav>
 <div class="bar"><div class="sys-wrap">
   <span class="fc" style="display:contents">
+    <button class="sys-btn sys-btn--md sys-btn--ghost" id="ftog" aria-expanded="false" aria-controls="fpanel"><span>Filters<span id="fcount"></span></span><svg class="chev" width="12" height="8" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 1l5 5 5-5"/></svg></button>
     <input class="sys-input" id="q" placeholder="Search by name" type="search" aria-label="Search fonts">
     <input class="sys-input" id="sample" value="The quick brown fox jumps over the lazy dog 0123456789" aria-label="Sample text">
     <div class="sys-controls"><label for="size">Size</label><input type="range" class="sys-slider" id="size" min="14" max="96" value="36"></div>
-    <button class="sys-btn sys-btn--md sys-btn--ghost" id="ftog" aria-expanded="false" aria-controls="fpanel">Filters<span id="fcount"></span></button>
     <div class="fpanel" id="fpanel">
       <div class="chips" id="chips" role="group" aria-label="Category"></div>
       <div class="chips" id="wchips" role="group" aria-label="Width"><button class="chip" data-w="0" aria-pressed="false">Condensed</button><button class="chip" data-w="2" aria-pressed="false">Wide</button></div>
