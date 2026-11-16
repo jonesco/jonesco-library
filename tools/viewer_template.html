@@ -96,6 +96,7 @@ body>.sys-section-nav .sys-nav{display:flex}
 #drop .sys-label{font-size:var(--size-tag)}#drop small{color:var(--hm);font-size:13px}
 #drop:hover,#drop.over{background:var(--hf);color:var(--hb);border-style:solid}#drop:hover small,#drop.over small{color:var(--hb)}
 #drop.off{cursor:default;opacity:.7}#drop.off:hover{background:transparent;color:var(--hf);border-style:dashed}#drop.off:hover small{color:var(--hm)}
+.pubrow{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}.pubrow[hidden]{display:none}#pubmsg{font-size:14px;color:var(--hm);max-width:300px}
 #dropmsg{max-width:360px;font-size:14px;margin-top:8px;color:var(--hm)}#dropmsg details{margin-top:4px}#dropmsg summary{cursor:pointer;color:var(--hf);font-family:var(--font-label);font-weight:700;font-size:13px;letter-spacing:var(--track-label);text-transform:uppercase}
 #dropmsg ul{margin:6px 0 0;padding-left:18px;max-height:160px;overflow:auto}
 .btns .sys-btn.warn{background:var(--accent);border-color:var(--accent);color:var(--paper)}
@@ -281,7 +282,8 @@ if(document.documentElement.classList.contains("home"))rd.start();
 <div class="herob"><div class="sys-wrap hero"><div class="herorow"><div><h1 class="sys-display" id="hero">Fonts</h1><p class="sys-label" id="sub"></p>
 </div>
   <div><div id="drop" class="off" role="button" tabindex="0" aria-label="Add fonts or graphics"><span class="sys-label" id="droplbl">Drop fonts, graphics or folders</span><small id="dropsm">Open with “Open Library.command” to add files</small></div>
-  <div id="dropmsg" aria-live="polite"></div><input type="file" id="pick" multiple hidden></div></div></div>
+  <div id="dropmsg" aria-live="polite"></div>
+  <div class="pubrow localonly" id="pubrow" hidden><button class="sys-btn sys-btn--md sys-btn--ghost" id="pub" type="button"><span>Publish online</span><span class="plus">↑</span></button><span id="pubmsg" aria-live="polite"></span></div><input type="file" id="pick" multiple hidden></div></div></div>
 </div>
 <nav class="sys-section-nav" aria-label="Library section"><div class="sys-wrap sys-nav"><a href="#fonts" id="hs-f" class="is-current" aria-current="page">Fonts</a><a href="#graphics" id="hs-g">Graphics</a></div></nav>
 <div class="bar"><div class="sys-wrap">
@@ -468,9 +470,14 @@ function refreshAll(){fLangs();FONTS.sort((a,b)=>a.n.toLowerCase()<b.n.toLowerCa
 function merge(st){const rf=new Set(st.removed.fonts),rg=new Set(st.removed.gfx),hf=new Set(FONTS.map(f=>f.file)),hg=new Set(GFX.map(g=>g.p));
   st.fonts.forEach(f=>{if(!hf.has(f.file))FONTS.push(f)});st.gfx.forEach(g=>{if(!hg.has(g.p))GFX.push(g)});
   FONTS=FONTS.filter(f=>!rf.has(f.file));GFX=GFX.filter(g=>!rg.has(g.p));refreshAll()}
-function dropState(on){SERVER=on;$("drop").classList.toggle("off",!on);
+function dropState(on){SERVER=on;$("pubrow").hidden=!on;$("drop").classList.toggle("off",!on);
   $("dropsm").textContent=on?"or click to choose files":"Open with “Open Library.command” to add files"}
 if(!ONLINE)fetch("/api/state").then(r=>r.ok?r.json():null).then(st=>{if(st){dropState(true);merge(st)}}).catch(()=>{});
+// Publish online: runs tools/publish.py through the launcher, then shows its progress here
+async function pubPoll(){const r=await fetch("/api/publish").then(r=>r.json()).catch(()=>null);if(!r)return;
+  $("pubmsg").textContent=r.message||"";$("pub").disabled=r.state==="running";if(r.state==="running")setTimeout(pubPoll,1500)}
+$("pub").onclick=async()=>{$("pub").disabled=true;$("pubmsg").textContent="Starting...";
+  await fetch("/api/publish",{method:"POST"}).catch(()=>{$("pubmsg").textContent="Could not reach the launcher."});pubPoll()};
 async function walk(en,path){
   if(en.isFile)return[await new Promise(r=>en.file(f=>r({file:f,rel:path+en.name}),()=>r(null)))].filter(Boolean);
   const rd=en.createReader();let all=[];for(;;){const b=await new Promise(r=>rd.readEntries(r,()=>r([])));if(!b.length)break;all.push(...b)}

@@ -1,10 +1,10 @@
 # Serves the library on 127.0.0.1 only: the viewer, Show in Finder, and the drop box (add / remove).
-import http.server, socketserver, subprocess, os, sys, json, urllib.parse, webbrowser
+import http.server, socketserver, subprocess, os, sys, json, urllib.parse, webbrowser, threading
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pipeline
 ROOT = pipeline.ROOT
 ALLOWED = [os.path.realpath(ROOT), os.path.realpath("/Users/Wes/Developer/_Fonts and Graphics")]
-PORT = 8765; HOSTS = {"127.0.0.1:%d" % PORT, "localhost:%d" % PORT}
+PORT = int(os.environ.get("LIBRARY_PORT", 8765)); HOSTS = {"127.0.0.1:%d" % PORT, "localhost:%d" % PORT}
 MAX = {"font": 100 * 2**20, "gfx": 600 * 2**20}
 class H(http.server.SimpleHTTPRequestHandler):
     def __init__(s, *a, **k): super().__init__(*a, directory=ROOT, **k)
@@ -20,12 +20,18 @@ class H(http.server.SimpleHTTPRequestHandler):
             ok = s._ok() and os.path.exists(p) and any(p == a or p.startswith(a + os.sep) for a in ALLOWED)
             if ok: subprocess.run(["open", "-R", p])
             s.send_response(200 if ok else 404); s.end_headers(); return
+        if u.path == "/api/publish":
+            return s._json(200, PUB) if s._ok() else s._json(403, {})
         if u.path == "/api/state":
             return s._json(200, pipeline.state()) if s._ok() else s._json(403, {})
         super().do_GET()
     def do_POST(s):
         u = urllib.parse.urlparse(s.path)
         if not s._ok(): return s._json(403, {"status": "rejected", "reason": "forbidden"})
+        if u.path == "/api/publish":
+            if PUB["state"] == "running": return s._json(200, PUB)
+            PUB.update(state="running", message="Starting...")
+            threading.Thread(target=publish, daemon=True).start(); return s._json(200, PUB)
         n = int(s.headers.get("Content-Length", 0))
         try:
             if u.path == "/api/add":
@@ -36,6 +42,13 @@ class H(http.server.SimpleHTTPRequestHandler):
         except Exception as e: return s._json(200, {"status": "rejected", "reason": "error: %s" % str(e)[:80]})
         s._json(404, {})
     def log_message(s, *a): pass
+PUB = {"state": "idle", "message": ""}
+def publish():                       # runs tools/publish.py and mirrors its last line into PUB for the page to show
+    p = subprocess.Popen([sys.executable, os.path.join(ROOT, "tools", "publish.py")], cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    for line in p.stdout:
+        if line.strip(): PUB["message"] = line.strip()[:200]
+    p.wait()
+    PUB["state"] = "done" if p.returncode == 0 else "error"
 class S(socketserver.ThreadingMixIn, socketserver.TCPServer): allow_reuse_address = True; daemon_threads = True
 try: srv = S(("127.0.0.1", PORT), H)
 except OSError:                      # the library is already being served (another window is open): just show it

@@ -37,7 +37,8 @@ if __name__ == "__main__":
     fm = re.search(r"let FONTS=(\[.*?\]);\nconst LIB", h, re.S); gm = re.search(r"let GFX=(\[.*?\]);const BASE", h, re.S)
     FONTS, GFX = json.loads(fm.group(1)), json.loads(gm.group(1))
     PAGE_ONLY = "--page-only" in sys.argv       # refresh index.html from the fonts and images already in docs/
-    if PAGE_ONLY:
+    UPDATE = "--update" in sys.argv             # like --page-only, but first converts only the fonts and images docs/ does not have yet
+    if PAGE_ONLY or UPDATE:
         ex = lambda p: os.path.exists(os.path.join(OUT, p))
         fr = {f["file"]: ("f/%s.woff2" % os.path.splitext(os.path.basename(f["file"]))[0]) for f in FONTS}
         fr = {k: (v if ex(v) else None) for k, v in fr.items()}
@@ -50,6 +51,14 @@ if __name__ == "__main__":
                     for e in ("png", "jpg"):
                         if ex("%s/%s.%s" % (d, n, e)): r[k] = "%s/%s.%s" % (d, n, e); break
             ir[g["p"]] = r
+        if UPDATE:
+            for d in ("f", "t", "p"): os.makedirs(os.path.join(OUT, d), exist_ok=True)
+            newf = [f for f in FONTS if not fr.get(f["file"])]
+            newg = [g for g in GFX if (g.get("t") and "t" not in ir[g["p"]]) or (g.get("v") and "v" not in ir[g["p"]])]
+            print("new fonts", len(newf), "new graphics", len(newg), flush=True)
+            with Pool(6) as pool:
+                fr.update(dict(pool.imap_unordered(font, newf, 20)))
+                for k, r in pool.imap_unordered(img, newg, 20): ir[k].update(r)
     else:
         shutil.rmtree(OUT, ignore_errors=True)
         for d in ("f", "t", "p"): os.makedirs(os.path.join(OUT, d))
