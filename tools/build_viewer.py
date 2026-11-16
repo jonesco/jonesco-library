@@ -33,6 +33,16 @@ def partial(f):
                 r = "".join(chr(c) for c in sorted(cm) if c > 32 and not 126 < c < 161 and chr(c).isprintable())[:300]
         except Exception: pass
     cov[f["file"]] = r; return r
+def tidy(n):   # "12 Akzidenz Grotesk** Black   09003" -> "Akzidenz Grotesk Black": drop the point size, the asterisks and the catalog code, none of which are in the font file
+    if re.search(r"\*|\s\d{5}$", n):
+        n = re.sub(r"^\d{1,2}\s+(?:pt\.?\s+)?(?=\D)", "", n)
+        n = re.sub(r"\s+\d{5}$", "", n.replace("*", ""))
+    return re.sub(r"\s+", " ", n).strip()
+FIX = {"Itlic": "Italic", "Bld": "Bold", "Ital": "Italic"}
+def fromps(ps):   # the name table holds a catalog code ("e 00100036"): use the PostScript name (Einhorn-Normal -> Einhorn Normal) and spell out its abbreviations
+    return " ".join(FIX.get(w, w) for w in pretty(ps).split())
+for f in fonts:
+    f["n"] = fromps(f["f"]) if re.fullmatch(r"[A-Za-z] ?\d{6,10}.*", f["n"].strip()) else tidy(f["n"])
 best = {}
 for f in fonts:                     # dedupe by PostScript name, keep the most complete copy
     k = f["f"].lower()
