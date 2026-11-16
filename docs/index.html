@@ -123,8 +123,8 @@ main.sys-wrap{padding-top:32px}   /* air between the filter bar and the first ro
 .grid{display:grid;gap:0;background:var(--paper);border-left:var(--thin);border-top:var(--thin)}
 .grid>*{border-right:var(--thin);border-bottom:var(--thin)}
 #list{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
-.card{background:var(--paper);padding:20px;cursor:pointer;min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
-.sp{font-size:var(--sz,36px);line-height:1.15;overflow-wrap:anywhere;margin-bottom:14px;min-height:1.2em}
+.card{min-width:0;overflow:hidden;background:var(--paper);padding:20px;cursor:pointer;min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
+.sp{max-width:100%;overflow:hidden;font-size:var(--sz,36px);line-height:1.15;overflow-wrap:anywhere;margin-bottom:14px;min-height:1.2em}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .nm{margin:0;font-size:16px;transition:color var(--quick)}
 .mt{margin-top:2px;font-size:13px;color:var(--muted)}
