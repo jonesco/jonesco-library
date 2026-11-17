@@ -5,7 +5,7 @@ def pretty(ps):                      # GarageGothic-Black -> Garage Gothic Black
     t = re.sub(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Za-z])(?=\d)|[-_]+", " ", ps or "")
     return re.sub(r"\s+", " ", t).strip() or ps
 fonts = []
-NOT_FONTS = {"graphics", "added", "removed", "removed-items", "fontnames", "gfxhash"}
+NOT_FONTS = {"graphics", "added", "removed", "removed-items", "fontnames", "gfxhash", "de-sets"}
 for m in sorted(glob.glob(os.path.join(root, "data", "*.json"))):
     if os.path.splitext(os.path.basename(m))[0] in NOT_FONTS: continue
     for r in json.load(open(m)):
@@ -124,6 +124,15 @@ for g in gfx:                                  # originals with an empty data fo
     try:
         if os.path.getsize(fp) == 0: g["z"] = 1
     except OSError: g["z"] = 1
+_de = json.load(open(os.path.join(root, "data", "de-sets.json")))   # the Design Elements catalog's own sets (from its PDF: volume + page letter -> subject)
+for g in gfx:                                  # collection + set, from the folder the original lives in
+    parts = [x.strip() for x in g["c"].split("/")]
+    if parts[0] == "Graphic Items": parts = parts[1:]
+    g["col"] = (parts[0] if parts else "") or "Other"
+    m = re.search(r"Volume (\d\d)\s*/(\d\d[A-Z])$", g["c"])
+    if m and m.group(2) in _de: g["set"], g["sv"] = _de[m.group(2)], int(m.group(1))
+    elif len(parts) > 1 and g["col"] != "Design Elements": g["set"] = re.sub(r"#\d+$", "", parts[1]).replace("_ ", " ").replace("_", " ").strip()
+    if g["col"] == "Design Elements" and "set" not in g: g["set"] = "Other"
 gfx.sort(key=lambda g: g["p"])
 html = open(os.path.join(here, "viewer_template.html")).read().replace("/*DATA*/[]", json.dumps(fonts, ensure_ascii=False)).replace("/*GFX*/[]", json.dumps(gfx, ensure_ascii=False))
 open(os.path.join(root, "index.html"), "w").write(html)

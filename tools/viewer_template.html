@@ -455,22 +455,30 @@ $("sample").oninput=()=>document.querySelectorAll(".sp:not([data-p])").forEach(s
 render();
 // ---- Graphics tab
 let GFX=/*GFX*/[];const BASE="/Users/Wes/Developer/_Fonts and Graphics/",PAGE=300;let gShown=0,gRows=[];
-function gTops(){const cur=$("gtop").value,tops=[...new Set(GFX.map(g=>g.top))].sort();$("gtop").innerHTML='<option value="">All collections</option>'+tops.map(t=>`<option value="${t.replace(/"/g,"&quot;")}">${t}</option>`).join("");$("gtop").value=tops.includes(cur)?cur:""}
+function gSel(){const v=$("gtop").value;if(!v)return{};const[k,c,st]=v.split("|");return k==="s"?{c,st}:{c}}
+function gTops(){const cur=$("gtop").value,E=x=>x.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"),by={};
+  GFX.forEach(g=>{const c=g.col||g.top;(by[c]=by[c]||new Map());if(g.set){const m=by[c],k=g.set;if(!m.has(k))m.set(k,g.sv||0)}});
+  const cols=Object.keys(by).sort();let h='<option value="">All collections</option>';
+  cols.forEach(c=>{const sets=[...by[c].entries()].sort((a,b)=>a[1]-b[1]||(a[0]<b[0]?-1:1));
+    if(!sets.length){h+=`<option value="c|${E(c)}">${E(c)}</option>`;return}
+    h+=`<optgroup label="${E(c)}"><option value="c|${E(c)}">All ${E(c)}</option>`+sets.map(([n,v])=>`<option value="s|${E(c)}|${E(n)}">${v?"Vol. "+v+" · ":""}${E(n)}</option>`).join("")+"</optgroup>"});
+  $("gtop").innerHTML=h;$("gtop").value=[...$("gtop").options].some(o=>o.value===cur)?cur:""}
 gTops();
+function gIn(g,t){return(!t.c||(g.col||g.top)===t.c)&&(!t.st||g.set===t.st)}
 function gExts(){ // only file types that have items under the current collection + preview settings
-  const t=$("gtop").value,pv=$("gprev").getAttribute("aria-checked")==="true",cur=$("gext").value;
-  const have=[...new Set(GFX.filter(g=>(!t||g.top===t)&&(!pv||g.t)).map(g=>g.ext))].sort();
+  const t=gSel(),pv=$("gprev").getAttribute("aria-checked")==="true",cur=$("gext").value;
+  const have=[...new Set(GFX.filter(g=>gIn(g,t)&&(!pv||g.t)).map(g=>g.ext))].sort();
   $("gext").innerHTML='<option value="">All types</option>'+have.map(e=>`<option value="${e}">${e}</option>`).join("");
   $("gext").value=have.includes(cur)?cur:""}
 gExts();
-function gFilter(){const q=$("gq").value.toLowerCase(),t=$("gtop").value,e=$("gext").value,pv=$("gprev").getAttribute("aria-checked")==="true";
-  gRows=GFX.filter(g=>(!q||g.p.toLowerCase().includes(q))&&(!t||g.top===t)&&(!e||g.ext===e)&&(!pv||g.t));
+function gFilter(){const q=$("gq").value.toLowerCase(),t=gSel(),e=$("gext").value,pv=$("gprev").getAttribute("aria-checked")==="true";
+  gRows=GFX.filter(g=>(!q||g.p.toLowerCase().includes(q)||(g.set||"").toLowerCase().includes(q))&&gIn(g,t)&&(!e||g.ext===e)&&(!pv||g.t));
   $("glist").innerHTML="";gShown=0;gMore();if(onGfx)setSub(gRows.length,GFX.length,"graphics")
-  if(!gRows.length)$("glist").append(emptyState("graphics",$("gq").value.trim(),(t?1:0)+(e?1:0),()=>{$("gq").value="";$("gtop").value="";$("gext").value="";gExts();gFilter()}))}
+  if(!gRows.length)$("glist").append(emptyState("graphics",$("gq").value.trim(),(t.c?1:0)+(e?1:0),()=>{$("gq").value="";$("gtop").value="";$("gext").value="";gExts();gFilter()}))}
 function gMore(){const g=$("glist");gRows.slice(gShown,gShown+PAGE).forEach(r=>{const d=document.createElement("div");d.className="gc2";
   const th=document.createElement("div");th.className="th";
   if(r.t){const im=new Image();im.loading="lazy";im.src=r.t;im.alt=r.n;if(r.bw)im.className="bw";th.append(im)}else th.innerHTML='<span class="np">No preview</span>';
-  const a=document.createElement("h3");a.className="nm sys-title";a.textContent=r.n;const b=document.createElement("div");b.className="mt";b.textContent=r.c.replace(/^Graphic Items\//,"");b.title=r.c;
+  const a=document.createElement("h3");a.className="nm sys-title";a.textContent=r.n;const b=document.createElement("div");b.className="mt";b.textContent=r.set?(r.col||"")+" · "+r.set:r.c.replace(/^Graphic Items\//,"");b.title=r.c;
   d.append(th,a,b);d.onclick=()=>gOpen(r);g.append(d)});gShown=Math.min(gShown+PAGE,gRows.length);
   $("more").style.display=onGfx&&gShown<gRows.length?"block":"none";$("morebtn").textContent="Show more ("+fmt(gRows.length-gShown)+" left)"}
 function gOpen(r){$("gn").textContent=r.n;$("gm").textContent=r.c+" · ."+r.ext;$("gimg").src=r.v||r.t||"";$("gimg").className=r.bw?"bw":"";$("gimg").parentNode.style.display=(r.v||r.t)?"":"none";
