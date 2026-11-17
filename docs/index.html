@@ -461,7 +461,7 @@ function gTops(){const cur=$("gtop").value,E=x=>x.replace(/&/g,"&amp;").replace(
   const cols=Object.keys(by).sort();let h='<option value="">All collections</option>';
   cols.forEach(c=>{const sets=[...by[c].entries()].sort((a,b)=>a[1]-b[1]||(a[0]<b[0]?-1:1));
     if(!sets.length){h+=`<option value="c|${E(c)}">${E(c)}</option>`;return}
-    h+=`<optgroup label="${E(c)}"><option value="c|${E(c)}">All ${E(c)}</option>`+sets.map(([n,v])=>`<option value="s|${E(c)}|${E(n)}">${v?"Vol. "+v+" · ":""}${E(n)}</option>`).join("")+"</optgroup>"});
+    h+=`<optgroup label="${E(c)}"><option value="c|${E(c)}">All ${E(c)}</option>`+sets.map(([n])=>`<option value="s|${E(c)}|${E(n)}">${E(n)}</option>`).join("")+"</optgroup>"});
   $("gtop").innerHTML=h;$("gtop").value=[...$("gtop").options].some(o=>o.value===cur)?cur:""}
 gTops();
 function gIn(g,t){return(!t.c||(g.col||g.top)===t.c)&&(!t.st||g.set===t.st)}
