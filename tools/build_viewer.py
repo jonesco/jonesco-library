@@ -103,6 +103,16 @@ for f in fonts:                                 # which family each font belongs
     if f["file"] not in fc: fc[f["file"]] = family_of(os.path.join(root, f["file"]), f["n"], f["f"])
     f["fam"], f["fk"] = fc[f["file"]]
 json.dump(fc, open(fp_, "w"))
+_keys = {f["fk"] for f in fonts}                # "Aachen D" is "Aachen" with a one-letter suffix: join them
+_join = {}
+for f in fonts:
+    w = f["fam"].split(" ")
+    if len(w) > 1 and len(w[-1]) == 1 and w[-1].isalpha():
+        base = re.sub(r"[^a-z0-9]", "", " ".join(w[:-1]).lower())
+        if base in _keys and base != f["fk"]: _join[f["fk"]] = (" ".join(w[:-1]), base)
+for f in fonts:
+    if f["fk"] in _join: f["fam"], f["fk"] = _join[f["fk"]]
+print(len(_join), "one-letter-suffix families joined:", sorted(v[0] for v in _join.values())[:20])
 fonts.sort(key=lambda f: (f["fk"], f.get("w", 400), f.get("it", 0), f["n"].lower()))
 json.dump(tc, open(tp, "w"))
 json.dump(cov, open(cov_path, "w"))

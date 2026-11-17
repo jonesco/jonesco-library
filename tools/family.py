@@ -14,6 +14,8 @@ def family_of(path, name="", ps=""):
         nt = TTFont(path, lazy=True)["name"]
         a16 = (nt.getDebugName(16) or "").strip(); a1 = (nt.getDebugName(1) or "").strip()
         fam, has16 = (a16, True) if a16 else (a1, False)
+        a4 = strip_style((nt.getDebugName(4) or "").strip())          # old fonts cut name ID 1 to 8 letters ("AacheDBol"); the full name is right
+        if not has16 and a4 and len(a1) <= 9 and not re.sub(r"[^a-z]", "", a4.lower()).startswith(re.sub(r"[^a-z]", "", a1.lower())): fam = a4
     except Exception: pass
     if not fam or JUNK.fullmatch(fam): fam, has16 = re.sub(r"[-_ ]+", " ", re.sub(r"(?<=[a-z])(?=[A-Z])", " ", (ps or "").split("-")[0])).strip() or name, False
     if not has16: fam = strip_style(fam)
