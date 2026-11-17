@@ -152,6 +152,7 @@ main.sys-wrap{padding-top:32px;padding-bottom:32px}   /* air between the filter 
 .empty h3{margin:0;font-size:var(--size-section)}.empty p{margin:0;max-width:44ch;color:var(--muted)}.empty .sys-btn{margin-top:12px}
 #more{padding:32px 0;text-align:center}
 /* Detail views are modals: a dimmed page behind, one bordered square-cornered panel that scrolls on its own. Full screen on phones. */
+.sys-to-top{z-index:19}   /* under the modals (20) */
 .dlg{position:fixed;inset:0;background:rgb(0 0 0/.65);display:none;z-index:20;align-items:center;justify-content:center;padding:40px 24px}.dlg.on{display:flex}
 :root:has(.dlg.on){overflow:hidden}
 .dpanel{width:min(1040px,100%);max-height:100%;overflow:auto;background:var(--paper);color:var(--ink);border:var(--rule);overscroll-behavior:contain}
@@ -295,7 +296,7 @@ const rd=(()=>{
 })();
 if(document.documentElement.classList.contains("home"))rd.start();
 </script>
-<div class="herob"><div class="sys-wrap hero"><div class="herorow"><div><h1 class="sys-display" id="hero">Fonts</h1><p class="sys-label" id="sub"></p>
+<div class="herob"><div class="sys-wrap hero"><div class="herorow"><div><h1 class="sys-display" id="hero" tabindex="-1" style="outline:0">Fonts</h1><p class="sys-label" id="sub"></p>
 </div></div></div>
 </div>
 <nav class="sys-section-nav" aria-label="Library section"><div class="sys-wrap sys-nav"><a href="#fonts" id="hs-f" class="is-current" aria-current="page">Fonts</a><a href="#graphics" id="hs-g">Graphics</a></div></nav>
@@ -330,6 +331,7 @@ if(document.documentElement.classList.contains("home"))rd.start();
 <div id="list" class="grid"></div><div id="glist" class="grid" style="display:none"></div>
 <div id="fsent" style="height:1px"></div>
 <div id="more" style="display:none"><button class="sys-btn sys-btn--md sys-btn--ghost" id="morebtn">Show more</button></div></main>
+<a class="sys-to-top" id="totop" href="#top"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 11V1.5M1.5 6 6 1.5 10.5 6"/></svg>Top</a>
 
 <section id="adlg" class="dlg localonly" role="dialog" aria-modal="true" aria-labelledby="atitle"><div class="dpanel dsmall"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="aclose">Close ✕</button></div></div>
   <div class="sys-wrap"><h2 class="sys-display" id="atitle">Add to the library</h2><p class="meta sys-label">Fonts, graphics or whole folders</p>
@@ -453,6 +455,10 @@ $("close").onclick=()=>{if(lastFam){const g=lastFam;$("dlg").classList.remove("o
 ["q","fsty","fthk","flang","comp","sort","size"].forEach(i=>$(i).oninput=render);fLangs();
 $("sample").oninput=()=>document.querySelectorAll(".sp:not([data-p])").forEach(s=>s.textContent=$("sample").value);
 render();
+// Back to top: shown once you are a screen down; hidden on the landing page
+{const tt=$("totop"),upd=()=>tt.classList.toggle("is-shown",scrollY>innerHeight*.8&&!document.documentElement.classList.contains("home")&&location.hash!==""&&!hasDlg());let r=0;
+ addEventListener("scroll",()=>{if(!r)r=requestAnimationFrame(()=>{r=0;upd()})},{passive:true});addEventListener("hashchange",upd);addEventListener("popstate",()=>setTimeout(upd,0));
+ tt.onclick=e=>{e.preventDefault();scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});$("hero").focus({preventScroll:true})}}
 // ---- Graphics tab
 let GFX=/*GFX*/[];const BASE="/Users/Wes/Developer/_Fonts and Graphics/",PAGE=300;let gShown=0,gRows=[];
 function gSel(){const v=$("gtop").value;if(!v)return{};const[k,c,st]=v.split("|");return k==="s"?{c,st}:{c}}
