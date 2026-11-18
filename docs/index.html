@@ -574,11 +574,11 @@ function gOpen(r){$("gn").textContent=r.n;$("gm").textContent=r.c+" · ."+r.ext;
 $("gclose").onclick=dlgOut;$("morebtn").onclick=gMore;
 $("gprev").onclick=()=>{$("gprev").setAttribute("aria-checked",$("gprev").getAttribute("aria-checked")!=="true");gExts();gFilter();listTop($("glist"))};
 ["gq","gext"].forEach(i=>$(i).oninput=()=>{gFilter();listTop($("glist"))});$("gtop").oninput=()=>{gExts();gFilter();listTop($("glist"))};
-function tab(g){onGfx=g;$("hs-f").classList.toggle("is-current",!g);$("hs-g").classList.toggle("is-current",g);$("hs-f").toggleAttribute("aria-current",!g);$("hs-g").toggleAttribute("aria-current",g);$("tf").toggleAttribute("aria-current",!g);$("tg").toggleAttribute("aria-current",g);
+function tab(g){const changed=g!==onGfx;onGfx=g;$("hs-f").classList.toggle("is-current",!g);$("hs-g").classList.toggle("is-current",g);$("hs-f").toggleAttribute("aria-current",!g);$("hs-g").toggleAttribute("aria-current",g);$("tf").toggleAttribute("aria-current",!g);$("tg").toggleAttribute("aria-current",g);
   $("tf").setAttribute("aria-pressed",!g);$("hero").textContent=g?"Graphics":"Fonts";
   $("list").style.display=g?"none":"";$("glist").style.display=g?"":"none";document.querySelector(".fc").style.display=g?"none":"contents";
   document.querySelector(".gc").style.display=g?"flex":"none";$("more").style.display=g&&gShown<gRows.length?"block":"none";
-  if(g){if(!gRows.length)gFilter();else setSub(gRows.length,GFX.length,"graphics")}else render()}
+  if(g){if(!gRows.length)gFilter();else setSub(gRows.length,GFX.length,"graphics")}else render();if(changed){const top=()=>scrollTo({top:0,behavior:"instant"});top();requestAnimationFrame(top)}}   // switching tabs starts at the top of the other list
 $("tf").onclick=()=>{location.hash="fonts"};$("tg").onclick=()=>{location.hash="graphics"};
 // A detail view gets its own history entry, so the browser Back button closes it and returns to the list instead of leaving for the overview
 const hasDlg=()=>history.state&&history.state.dlg;
