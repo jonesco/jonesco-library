@@ -8,7 +8,7 @@ A private library of fonts and graphics, with a viewer to browse, search and add
 - **Overview:** the page opens on a full-screen reaction-diffusion field, black on yellow (Gray-Scott on a coarse grid, drawn by WebGL2 at the screen's full pixel density so the edges stay sharp; a 2D canvas is the fallback; nothing to load). Dragging paints new growth; a click or tap clears a ragged patch of blank yellow that grows outward, and the pattern regrows into it. with links to Fonts and Graphics. Views are `#fonts` and `#graphics`; no hash is the overview. It runs on phones too: 44px targets, one-column fonts, two-column graphics.
 - **Font filters** (after Google Fonts): category chips (serif, sans serif, display, handwriting, monospace, symbols), Condensed and Wide chips (measured from the shape of the capital O when a font's name and data say nothing), style, thickness, language, completeness, sort and reset; on phones they fold behind a Filters button. Categories, weight, width, slant and scripts are read from each font file (`tools/traits.py`; category falls back to the name, then to the shape of the capital I) and are approximate for old fonts that declare nothing.
 - **Viewer:** one page, `index.html`, built from `tools/viewer_template.html`. Jonesco system 3.5.0 (a copy in `system/` for offline use; online it links the pinned design.jonesco.com version). Light and dark mode.
-- **Local mode** (opened through the launcher): Show in Finder, drag-and-drop adding of fonts, graphics and folders. There is no Remove button on purpose; removals are done deliberately with `tools/pipeline.remove()`.
+- **Local mode** (opened through the launcher): Show in Finder, drag-and-drop adding of fonts, graphics and folders. **Delete:** hovering a font card, a style row or a graphic shows a trash icon (local only); it opens a confirmation, then the library's files for that item move into `deleted/` (same paths, plus `deleted/manifest.json`) and the item is hidden from the page and from the next publish. Nothing is erased: `tools/restore.py` lists and restores, or drag files out of `deleted/` to the Trash for good. Deleting a family card deletes every style on it. Originals in _Fonts and Graphics are never touched.
 - **Icons and link preview:** the yellow mark (`icons/jonesco-library.svg`, PNGs at 32/96/180/192/512) and a 1200x630 preview image (`icons/og.png`, rendered by `tools/og.html`) with Open Graph and Twitter tags in the page head, plus `manifest.webmanifest`. The page background above the header and below the footer follows the theme, and the theme-color meta tracks light and dark.
 - **Online mode** (library.jonesco.com): read-only; Download instead of Show in Finder. Preview locally with `index.html?online`.
 
@@ -16,7 +16,7 @@ A private library of fonts and graphics, with a viewer to browse, search and add
 ```
 tools/          the code: converters, viewer template, launcher, deploy
 Open Library.command   starts the local server and opens the viewer
-fonts/ thumbs/ previews/ added/ data/   the collection and its state (not in git)
+fonts/ thumbs/ previews/ added/ deleted/ data/   the collection and its state (not in git)
 ```
 
 ## Build and run

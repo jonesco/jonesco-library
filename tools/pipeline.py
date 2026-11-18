@@ -1,5 +1,5 @@
 # Adding and removing items for the viewer's drop box. Used by serve.py. Run with .venv/bin/python (needs fontTools).
-import os, io, re, json, hashlib, subprocess, tempfile, threading
+import os, io, re, json, hashlib, subprocess, tempfile, threading, shutil, time
 from fontTools.ttLib import TTFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE = "/Users/Wes/Developer/_Fonts and Graphics/"
@@ -149,22 +149,52 @@ def add(relname, data):
     if ext in FONT_EXT: return add_font(os.path.basename(relname), data)
     return add_graphic(relname, data)
 
+DEL = os.path.join(ROOT, "deleted")
+def _park(src):
+    """Moves a file this library holds into deleted/, keeping its path under the library, and returns that relative path."""
+    if not (inside(src) and os.path.isfile(src)): return None
+    rel = os.path.relpath(os.path.realpath(src), os.path.realpath(ROOT)); dst = os.path.join(DEL, rel)
+    os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.move(src, dst); return rel
+
 def remove(kind, key):
-    """Hides an item and deletes this library's copy of it. Originals in _Fonts and Graphics are never touched."""
+    """Hides an item from the library and moves this library's copy of it into deleted/ (nothing is erased; put it back with
+    tools/restore.py, or drag the files to the Trash to get rid of them). Originals in _Fonts and Graphics are never touched."""
     with LOCK:
         r = jload(D("removed-items.json"), {"fonts": [], "gfx": []}); a = jload(D("added.json"), {"fonts": [], "gfx": []})
         lst = r["fonts" if kind == "font" else "gfx"]
         if key not in lst: lst.append(key)
-        jsave(D("removed-items.json"), r); doomed = []
+        jsave(D("removed-items.json"), r); doomed = []; added_item = None
         if kind == "font":
-            doomed.append(os.path.join(ROOT, key)); a["fonts"] = [x for x in a["fonts"] if x["file"] != key]
+            doomed.append(os.path.join(ROOT, key))
+            added_item = next((x for x in a["fonts"] if x["file"] == key), None); a["fonts"] = [x for x in a["fonts"] if x["file"] != key]
         else:
             h = hashlib.md5(key.encode()).hexdigest()
             doomed += [os.path.join(ROOT, "thumbs", h + ".png"), os.path.join(ROOT, "previews", h + ".png"), os.path.join(ROOT, "previews", h + ".jpg")]
             for x in a["gfx"]:
-                if x["p"] == key: doomed.append(x["a"])
+                if x["p"] == key: doomed.append(x["a"]); added_item = x
             a["gfx"] = [x for x in a["gfx"] if x["p"] != key]
         jsave(D("added.json"), a)
-        for p in doomed:
-            if inside(p) and os.path.isfile(p): os.remove(p)
-    return {"status": "removed"}
+        moved = [m for m in (_park(p) for p in doomed) if m]
+        man = jload(os.path.join(DEL, "manifest.json"), []); os.makedirs(DEL, exist_ok=True)
+        man = [m for m in man if not (m["kind"] == kind and m["key"] == key)]
+        man.append({"kind": kind, "key": key, "name": os.path.basename(key), "when": time.strftime("%Y-%m-%d %H:%M"), "files": moved, "added_item": added_item})
+        jsave(os.path.join(DEL, "manifest.json"), man)
+    return {"status": "removed", "moved": len(moved)}
+
+def deleted():
+    return jload(os.path.join(DEL, "manifest.json"), [])
+
+def restore(kind, key):
+    """Puts a deleted item back: its files return from deleted/ and it stops being hidden. Run tools/build_viewer.py afterward."""
+    with LOCK:
+        man = jload(os.path.join(DEL, "manifest.json"), []); m = next((x for x in man if x["kind"] == kind and x["key"] == key), None)
+        if not m: return {"status": "rejected", "reason": "not in deleted/"}
+        for rel in m["files"]:
+            src, dst = os.path.join(DEL, rel), os.path.join(ROOT, rel)
+            if os.path.isfile(src) and not os.path.exists(dst): os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.move(src, dst)
+        r = jload(D("removed-items.json"), {"fonts": [], "gfx": []}); k = "fonts" if kind == "font" else "gfx"
+        r[k] = [x for x in r[k] if x != key]; jsave(D("removed-items.json"), r)
+        if m.get("added_item"):
+            a = jload(D("added.json"), {"fonts": [], "gfx": []}); a[k].append(m["added_item"]); jsave(D("added.json"), a)
+        jsave(os.path.join(DEL, "manifest.json"), [x for x in man if x is not m])
+    return {"status": "restored"}

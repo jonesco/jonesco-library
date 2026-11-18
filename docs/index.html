@@ -142,6 +142,11 @@ main.sys-wrap{padding-top:32px;padding-bottom:32px}   /* air between the filter 
 .th img{max-width:100%;max-height:140px;mix-blend-mode:multiply}
 .np{color:var(--muted);font-size:13px}
 .gc2 .nm{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card,.gc2,.frow{position:relative}
+.del{position:absolute;top:8px;right:8px;width:36px;height:36px;display:none;align-items:center;justify-content:center;padding:0;border:0;border-radius:0;background:var(--ink);color:var(--paper);cursor:pointer;z-index:1;transition:background var(--quick),color var(--quick)}
+.del:hover,.del:focus-visible{background:var(--accent);color:#fff}
+body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,body.srv .frow:focus-within .del,body.srv .del:focus-visible{display:flex}   /* local mode only: a delete icon appears on hover */
+#dtitle{overflow-wrap:anywhere}
 .gc2 .mt{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:-6px}
 .loading{padding:var(--space-section) 0;display:flex;flex-direction:column;gap:16px;align-items:flex-start}
 .loading .bar{width:240px;height:4px;background:var(--newsprint);position:relative;overflow:hidden}
@@ -346,6 +351,12 @@ if(document.documentElement.classList.contains("home"))rd.start();
   <div class="btns"><button class="sys-btn sys-btn--md" id="pub" type="button"><span>Publish</span><span class="plus">↑</span></button></div>
   <div id="pubmsg" aria-live="polite"></div></div></div></section>
 
+<section id="ddlg" class="dlg localonly" role="dialog" aria-modal="true" aria-labelledby="dtitle"><div class="dpanel dsmall"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="dclose">Close ✕</button></div></div>
+  <div class="sys-wrap"><h2 class="sys-display" id="dtitle">Delete</h2><p class="meta sys-label" id="dmeta"></p>
+  <p class="lead">It moves to the deleted folder in the library, so you can put it back or drag it to the Trash yourself. It leaves this page now, and library.jonesco.com the next time you publish.</p>
+  <div class="btns"><button class="sys-btn sys-btn--md" id="dgo" type="button"><span>Delete</span><span class="plus">×</span></button><button class="sys-btn sys-btn--md sys-btn--ghost" id="dno" type="button">Cancel</button></div>
+  <div id="dmsg" aria-live="polite"></div></div></div></section>
+
 <section id="fdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="fn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="fclose">Close ✕</button></div></div>
   <div class="sys-wrap"><h2 class="sys-display" id="fn"></h2><p class="meta sys-label" id="fm"></p><div id="fstyles"></div></div></div></section>
 
@@ -392,7 +403,7 @@ function addFonts(){
     const row=d.querySelector(".row");
     if(many){const t=document.createElement("span");t.className="sys-tag sys-tag--light stl";t.textContent=g.styles.length+" styles";row.append(t)}
     else if(f.x){const t=document.createElement("span");t.className="sys-tag sys-tag--light";t.textContent="Incomplete";t.title="Missing: "+f.x;row.append(t)}
-    d.onclick=()=>many?showFam(g):openFont(f);list.append(d);io.observe(d)});
+    d.onclick=()=>many?showFam(g):openFont(f);delBtn(d,()=>askDelete((many?g.styles.map(x=>x[0]):[f]).map(x=>({kind:"font",key:x.file})),many?g.fam:f.n,many?g.styles.length+" styles":"Font"));list.append(d);io.observe(d)});
   fShown=Math.min(fShown+FPAGE,fRows.length);
   setTimeout(moreFonts,0)}
 // The family view: every style listed in its own face; picking one opens its detail, and Back returns here
@@ -401,7 +412,7 @@ function showFam(g){closeAll();$("fn").textContent=g.fam;const all=FONTS.filter(
     const lab=document.createElement("div");lab.className="fl";let st=f.n;if(f.n.toLowerCase().startsWith(g.fam.toLowerCase()))st=f.n.slice(g.fam.length).trim();lab.textContent=st||"Regular";
     if(f.x){const t=document.createElement("span");t.className="sys-tag sys-tag--light";t.textContent="Incomplete";t.title="Missing: "+f.x;lab.append(t)}
     const sp=document.createElement("div");sp.className="fs";sp.style.fontFamily=`'F_${f.f}',sans-serif`;sp.textContent=f.p?f.p.slice(0,30):$("sample").value;
-    r.append(lab,sp);r.onclick=()=>openFont(f,g);r.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();openFont(f,g)}};box.append(r)});
+    r.append(lab,sp);r.onclick=()=>openFont(f,g);r.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();openFont(f,g)}};delBtn(r,()=>askDelete([{kind:"font",key:f.file}],f.n,"Font"));box.append(r)});
   $("fdlg").classList.add("on");dlgIn()}
 $("fclose").onclick=dlgOut;
 function moreFonts(){   // keep adding batches while the end of the list is within ~1500px of the viewport
@@ -485,7 +496,7 @@ function gMore(){const g=$("glist");gRows.slice(gShown,gShown+PAGE).forEach(r=>{
   const th=document.createElement("div");th.className="th";
   if(r.t){const im=new Image();im.loading="lazy";im.src=r.t;im.alt=r.n;if(r.bw)im.className="bw";th.append(im)}else th.innerHTML='<span class="np">No preview</span>';
   const a=document.createElement("h3");a.className="nm sys-title";a.textContent=r.n;const b=document.createElement("div");b.className="mt";b.textContent=r.set?(r.col||"")+" · "+r.set:r.c.replace(/^Graphic Items\//,"");b.title=r.c;
-  d.append(th,a,b);d.onclick=()=>gOpen(r);g.append(d)});gShown=Math.min(gShown+PAGE,gRows.length);
+  d.append(th,a,b);d.onclick=()=>gOpen(r);delBtn(d,()=>askDelete([{kind:"gfx",key:r.p}],r.n,r.c));g.append(d)});gShown=Math.min(gShown+PAGE,gRows.length);
   $("more").style.display=onGfx&&gShown<gRows.length?"block":"none";$("morebtn").textContent="Show more ("+fmt(gRows.length-gShown)+" left)"}
 function gOpen(r){$("gn").textContent=r.n;$("gm").textContent=r.c+" · ."+r.ext;$("gimg").src=r.v||r.t||"";$("gimg").className=r.bw?"bw":"";$("gimg").parentNode.style.display=(r.v||r.t)?"":"none";
   const ap=r.a||BASE+r.p,hasOrig=!r.z;
@@ -532,7 +543,18 @@ function refreshAll(){fLangs();FONTS.sort((a,b)=>{const x=a.fk||a.n.toLowerCase(
 function merge(st){const rf=new Set(st.removed.fonts),rg=new Set(st.removed.gfx),hf=new Set(FONTS.map(f=>f.file)),hg=new Set(GFX.map(g=>g.p));
   st.fonts.forEach(f=>{if(!hf.has(f.file))FONTS.push(f)});st.gfx.forEach(g=>{if(!hg.has(g.p))GFX.push(g)});
   FONTS=FONTS.filter(f=>!rf.has(f.file));GFX=GFX.filter(g=>!rg.has(g.p));refreshAll()}
-function dropState(on){SERVER=on;$("hadd").hidden=!on;$("hpub").hidden=!on}
+function trashIcon(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'}
+function delBtn(el,fn){const b=document.createElement("button");b.type="button";b.className="del localonly";b.setAttribute("aria-label","Delete");b.innerHTML=trashIcon();b.onclick=e=>{e.stopPropagation();fn()};b.onkeydown=e=>e.stopPropagation();el.append(b)}
+// Delete (local mode): asks first, then the launcher moves the files into deleted/ and the item leaves the page
+let delItems=[];
+function askDelete(items,name,meta){if(!SERVER)return;delItems=items;closeAll();$("dtitle").textContent="Delete "+name+"?";$("dmeta").textContent=meta;$("dmsg").textContent="";$("dgo").disabled=false;$("ddlg").classList.add("on");dlgIn()}
+async function doDelete(){$("dgo").disabled=true;
+  const r=await fetch("/api/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({items:delItems})}).then(r=>r.json()).catch(()=>null);
+  if(!r||r.status!=="removed"){$("dmsg").textContent="Could not delete. Is the launcher still running?";$("dgo").disabled=false;return}
+  const fk=new Set(delItems.filter(i=>i.kind==="font").map(i=>i.key)),gk=new Set(delItems.filter(i=>i.kind==="gfx").map(i=>i.key));
+  FONTS=FONTS.filter(f=>!fk.has(f.file));GFX=GFX.filter(g=>!gk.has(g.p));dlgOut();refreshAll()}
+$("dgo").onclick=doDelete;$("dno").onclick=dlgOut;$("dclose").onclick=dlgOut;
+function dropState(on){SERVER=on;document.body.classList.toggle("srv",on);$("hadd").hidden=!on;$("hpub").hidden=!on}
 function openAdd(){if(!SERVER||$("adlg").classList.contains("on"))return;closeAll();$("afollow").hidden=true;$("dropmsg").textContent="";$("adlg").classList.add("on");dlgIn()}
 function openPub(){if(!SERVER)return;closeAll();$("pdlg").classList.add("on");dlgIn();pubPoll()}
 $("hadd").onclick=openAdd;$("hpub").onclick=()=>{$("pubmsg").textContent="";openPub()};

@@ -85,6 +85,11 @@ if __name__ == "__main__":
     open(os.path.join(OUT, "index.html"), "w").write(h)
     shutil.copy(os.path.join(ROOT, "manifest.webmanifest"), os.path.join(OUT, "manifest.webmanifest"))
     shutil.rmtree(os.path.join(OUT, "icons"), ignore_errors=True); shutil.copytree(os.path.join(ROOT, "icons"), os.path.join(OUT, "icons"))
+    if UPDATE:                                  # drop files for anything that is no longer in the library (deleted items), so they leave the public site too
+        keep = {f["file"] for f in fonts} | {g[k] for g in gfx for k in ("t", "v") if g.get(k)}
+        for d in ("f", "t", "p"):
+            for fn in os.listdir(os.path.join(OUT, d)):
+                if d + "/" + fn not in keep: os.remove(os.path.join(OUT, d, fn))
     open(os.path.join(OUT, "robots.txt"), "w").write("User-agent: *\nDisallow: /\n"); open(os.path.join(OUT, ".nojekyll"), "w").write("")
     open(os.path.join(OUT, "CNAME"), "w").write("library.jonesco.com\n")
     print("docs/: %d fonts, %d graphics" % (len(fonts), len(gfx)))

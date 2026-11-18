@@ -1,4 +1,4 @@
-# Serves the library on 127.0.0.1 only: the viewer, Show in Finder, and the drop box (add / remove).
+# Serves the library on 127.0.0.1 only: the viewer, Show in Finder, and the drop box (add) and delete (moves items into deleted/).
 import http.server, socketserver, subprocess, os, sys, json, urllib.parse, webbrowser, threading
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pipeline
@@ -39,6 +39,10 @@ class H(http.server.SimpleHTTPRequestHandler):
                 kind = "font" if os.path.splitext(name)[1].lower() in pipeline.FONT_EXT else "gfx"
                 if n > MAX[kind]: s.rfile.read(0); return s._json(200, {"status": "rejected", "reason": "file too large"})
                 return s._json(200, pipeline.add(name, s.rfile.read(n)))
+            if u.path == "/api/delete":      # moves the item's files into deleted/ and hides it; the body is {"items": [{"kind": "font"|"gfx", "key": "..."}]}
+                items = json.loads(s.rfile.read(n) or b"{}").get("items", [])
+                done = [pipeline.remove(i["kind"], i["key"]) for i in items if i.get("kind") in ("font", "gfx") and isinstance(i.get("key"), str) and i["key"]]
+                return s._json(200, {"status": "removed", "count": len(done)})
         except Exception as e: return s._json(200, {"status": "rejected", "reason": "error: %s" % str(e)[:80]})
         s._json(404, {})
     def log_message(s, *a): pass
