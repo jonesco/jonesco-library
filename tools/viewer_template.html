@@ -158,7 +158,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
 #dtitle{overflow-wrap:anywhere}
 .card.dropto{outline:3px solid var(--accent);outline-offset:-3px}.card.dragging{opacity:.4}
 .pull{right:52px}
-#frn[hidden]{display:none}#frn{height:40px;margin:-8px 0 24px;display:flex;align-items:center}#frn .freset{padding:0}#frn form{display:flex;gap:8px;align-items:center;width:100%;min-width:0}#frn .sys-input{flex:1 1 auto;min-width:0;max-width:420px}#frn .sys-btn{flex:none}   /* the rename row is as tall as the form, so opening it moves nothing */
+#frn[hidden]{display:none}.ftools{display:flex;align-items:center;gap:16px;margin:-8px 0 24px}#frn{height:40px;margin:0;flex:1 1 auto;min-width:0;display:flex;align-items:center}#frn .freset{padding:0}#frn form{display:flex;gap:8px;align-items:center;width:100%;min-width:0}#frn .sys-input{flex:1 1 auto;min-width:0;max-width:420px}#frn .sys-btn{flex:none}   /* the rename row is as tall as the form, so opening it moves nothing */
 #toast{position:fixed;left:24px;bottom:24px;z-index:40;display:none;align-items:center;gap:16px;max-width:calc(100% - 48px);padding:12px 16px;background:var(--ink);color:var(--paper);font-size:15px}
 #toast.on{display:flex}#toast button{flex:none;background:none;border:0;color:var(--highlight);font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;cursor:pointer;padding:6px 0}#toast button:hover{text-decoration:underline}
 .vtog{display:flex;border:var(--thin)}
@@ -214,7 +214,8 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
 .fs{font-size:var(--fsz,32px);line-height:1.2;overflow:hidden;overflow-wrap:anywhere;max-height:2.5em;min-width:0}
 @media (max-width:700px){.frow{grid-template-columns:1fr}.fs{font-size:var(--fsz,26px)}}
 .dsz{display:flex;align-items:center;gap:10px;margin-left:auto;width:min(240px,100%);--track:#bbb}.dsz label{font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase}.dsz input{flex:1;min-width:0}
-#fsz{margin:0 0 20px}
+#fsz{margin:0 0 0 auto;flex:none}
+@media (max-width:700px){.ftools{display:block}#fsz{margin:12px 0 0;width:100%}}
 @media (max-width:700px){.dsz{width:100%}}
 .big:empty::before{content:"Type your own text";color:var(--muted);font-family:var(--font-body)}   /* shown when the text is cleared */
 .big:focus{box-shadow:0 3px 0 var(--accent)}   /* the magenta underline says "you are typing here" (the page is white here in light mode) */
@@ -405,7 +406,7 @@ if(document.documentElement.classList.contains("home"))rd.start();
 </div></section>
 
 <section id="fdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="fn"><div class="dpanel"><div class="xwrap"><button class="xbtn" id="fclose" type="button" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
-  <div class="sys-wrap"><h2 class="sys-display" id="fn"></h2><p class="meta sys-label" id="fm"></p><div id="frn" class="localonly" hidden></div><div class="dsz" id="fsz"><label for="fsize">Size</label><input type="range" class="sys-slider" id="fsize" min="14" max="96" value="32"></div><div id="fstyles"></div></div></div></section>
+  <div class="sys-wrap"><h2 class="sys-display" id="fn"></h2><p class="meta sys-label" id="fm"></p><div class="ftools"><div id="frn" class="localonly" hidden></div><div class="dsz" id="fsz"><label for="fsize">Size</label><input type="range" class="sys-slider" id="fsize" min="14" max="96" value="32"></div></div><div id="fstyles"></div></div></div></section>
 
 <section id="gdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="gn"><div class="dpanel"><div class="xwrap"><button class="xbtn" id="gclose" type="button" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
   <div class="sys-wrap"><h2 class="sys-display" id="gn"></h2><p class="meta sys-label" id="gm"></p>
