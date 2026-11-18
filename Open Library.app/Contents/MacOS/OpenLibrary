@@ -1,0 +1,10 @@
+#!/bin/bash
+# Starts the library server in the background (no Terminal window) and opens the page. An older server is stopped first, so every launch runs the current code.
+DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
+PORT=8765
+for pid in $(lsof -tiTCP:$PORT -sTCP:LISTEN 2>/dev/null); do
+  ps -p "$pid" -o command= | grep -q "tools/serve.py" && kill "$pid"
+done
+sleep 0.5
+cd "$DIR"
+nohup .venv/bin/python tools/serve.py >/tmp/library-server.log 2>&1 </dev/null &

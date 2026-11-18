@@ -26,6 +26,7 @@ fonts/ thumbs/ previews/ added/ deleted/ data/   the collection and its state (n
 python3 -m venv .venv && .venv/bin/pip install fonttools pillow   # once; also needs fontforge and ghostscript (brew)
 .venv/bin/python tools/build_viewer.py       # rebuild index.html from data/
 ./Open Library.command                       # local server on 127.0.0.1:8765
+Open Library.app                           # the same, with no Terminal window; each open restarts the server so it runs the current code
 ```
 Rebuilding from the originals: `tools/run_all.sh` (fonts), `tools/thumbs.py`, `tools/previews.py`, `tools/classify.py` (graphics).
 
