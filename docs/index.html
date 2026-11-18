@@ -402,8 +402,7 @@ if(document.documentElement.classList.contains("home"))rd.start();
 
 <section id="dlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="dn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="close">Close ✕</button></div></div>
   <div class="sys-wrap"><h2 class="sys-display" id="dn"></h2><p class="meta sys-label" id="dm"></p>
-  <div class="btns"><button class="sys-btn sys-btn--md" id="fin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="fino">Show original</button>
-    <button class="sys-btn sys-btn--md sys-btn--ghost" id="cpn">Copy name</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="cpp">Copy file path</button><span class="note" id="note"></span></div>
+  <div class="btns"><button class="sys-btn sys-btn--md" id="fin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="cpn">Copy name</button><span class="note" id="note"></span></div>
   <div class="big" id="dbig" contenteditable spellcheck="false" role="textbox" aria-label="Type your own text to preview this font"></div><p class="sys-label bighint">Click the text and type your own</p><div id="grid" class="grid"></div></div></div></section>
 
 <footer class="sys-footer"><div class="sys-wrap"><small>Personal font and graphics library. For private use only.</small></div></footer>
@@ -498,8 +497,8 @@ function open(f){load(f);const ff=`'F_${f.f}',sans-serif`;
   cps.forEach(u=>{const d=document.createElement("div");d.textContent=String.fromCodePoint(u);g.append(d)});
   $("fin").textContent=ONLINE?"Download":"Show in Finder";
   $("fin").onclick=ONLINE?()=>dl(enc(f.file),f.f+f.file.slice(f.file.lastIndexOf("."))):()=>reveal(LIB+f.file,$("note"));
-  $("fin").style.display=LITE?"none":"";$("fino").onclick=()=>reveal(f.s,$("note"));$("fino").style.display=(!ONLINE&&f.s)?"":"none";$("cpp").style.display=ONLINE?"none":"";$("note").textContent="";
-  $("cpn").onclick=()=>copyText(f.n);$("cpp").onclick=()=>copyText(f.file);
+  $("fin").style.display=LITE?"none":"";$("note").textContent="";
+  $("cpn").onclick=()=>copyText(f.n);
   $("dlg").classList.add("on");dlgIn()}
 $("close").onclick=()=>{if(lastFam){const g=lastFam;$("dlg").classList.remove("on");showFam(g)}else dlgOut()};
 ["q","fsty","fthk","flang","comp","sort","size"].forEach(i=>$(i).oninput=render);fLangs();
