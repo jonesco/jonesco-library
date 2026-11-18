@@ -212,7 +212,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
 .xbtn{position:absolute;top:24px;right:24px;width:48px;height:48px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:var(--pi);color:var(--pp);cursor:pointer;transition:background var(--quick),color var(--quick)}
 .xbtn:hover,.xbtn:focus-visible{background:var(--accent);color:#fff}
 :root[data-theme=dark] .xbtn:hover,:root[data-theme=dark] .xbtn:focus-visible{background:var(--highlight);color:#000}
-#fn,#dn,#gn{padding-right:64px}
+#fn,#dn,#gn{padding-right:64px;margin-top:calc(24px - .114em)}   /* the top of the capitals lines up with the top of the close box (24px; 12px on phones) */
 .dlg .dpanel .back{display:block;margin:28px 0 -14px;padding:0}
 .dlg .dpanel .back:not([hidden])+h2{margin-top:24px}
 .dlg h2{margin:32px 0 0;font-size:var(--size-section)}
@@ -262,7 +262,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
   .dlg h2{margin-top:24px;font-size:36px}.dlg .meta{margin-bottom:16px}.big{font-size:var(--dsz,40px);padding:16px 0 24px}
   .btns{gap:8px}.btns .sys-btn{flex:1 1 140px}.btns .note{width:100%;margin:4px 0 0}
   #grid{grid-template-columns:repeat(auto-fill,minmax(56px,1fr))}#grid div{font-size:24px;padding:10px 0}
-  .artbox{padding:12px}.xbtn{top:12px;right:12px;width:44px;height:44px}
+  .artbox{padding:12px}.xbtn{top:12px;right:12px;width:44px;height:44px}#fn,#dn,#gn{margin-top:calc(12px - .114em)}
   .sys-footer .sys-wrap{padding-top:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
   .homepanel{padding:20px;margin-bottom:var(--gutter-sm)}.homepanel p{margin-bottom:16px}.homepanel h1{font-size:36px}
 }
