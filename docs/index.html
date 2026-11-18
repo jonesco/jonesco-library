@@ -146,7 +146,7 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
 #fsty{order:1}#fthk{order:2}#sort{order:3}#flang{order:4}#comp{order:5}#freset{order:6;margin-left:auto}
 #ftog{display:inline-flex;align-items:center;gap:10px;flex:none}#ftog .chev{transition:transform var(--quick)}#ftog[aria-expanded="true"] .chev{transform:rotate(180deg)}#fcount:empty{display:none}
 .fpanel{display:none}.fpanel.open{display:flex}   /* filters fold away on every screen size; the button is the first control in the bar */
-.freset{font:700 13px/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:8px 4px}.freset:hover{color:var(--accent)}.freset[hidden]{display:none}
+.freset{font:700 13px/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:3px;padding:8px 4px;transition:color var(--quick)}.freset:hover{color:var(--accent)}.freset[hidden]{display:none}   /* type in the surface's ink, a magenta underline, magenta type on hover */
 .gc{display:none;flex-wrap:wrap;gap:12px;align-items:center}
 body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}   /* a short list still pushes the footer to the bottom of the window, so the page background never shows under it */
 main.sys-wrap{width:100%;flex:1 0 auto;padding-top:32px;padding-bottom:32px}   /* air between the filter bar and the first row, and between the last row and the footer */
