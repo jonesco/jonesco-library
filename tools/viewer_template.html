@@ -120,7 +120,9 @@ body>.sys-section-nav .sys-nav{display:flex}
 .bar .sys-input{background-color:var(--hf);color:var(--hb)}.bar .sys-input::placeholder{color:#777}.bar .sys-input:focus{border-color:var(--highlight)}
 .bar .sys-wrap{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding-top:14px;padding-bottom:14px}
 .bar .sys-input{width:auto}
-.bar [type=search]{width:240px}.bar #sample{flex:1;min-width:220px}
+.bar [type=search]{width:240px}
+.bar [type=search]::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;width:16px;height:16px;margin:0 0 0 8px;cursor:pointer;background:center/16px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M3 3l10 10M13 3L3 13'/%3E%3C/svg%3E")}   /* the clear (x) is drawn here so it shows on the dark field */
+:root[data-theme=dark] .bar [type=search]::-webkit-search-cancel-button{filter:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%23fff' stroke-width='2'%3E%3Cpath d='M3 3l10 10M13 3L3 13'/%3E%3C/svg%3E")}.bar #sample{flex:1;min-width:220px}
 select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;background-position:right 12px center;background-size:12px 8px;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E")}
 .bar .sys-controls{display:flex;align-items:center;gap:10px;background:none;color:var(--ink);padding:0;border:0;--track:#555}.bar .sys-controls label{font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase}
