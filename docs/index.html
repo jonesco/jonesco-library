@@ -397,7 +397,7 @@ if(document.documentElement.classList.contains("home"))rd.start();
 
 <section id="gdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="gn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="gclose">Close ✕</button></div></div>
   <div class="sys-wrap"><h2 class="sys-display" id="gn"></h2><p class="meta sys-label" id="gm"></p>
-  <div class="btns"><button class="sys-btn sys-btn--md" id="gfin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="gcp">Copy path</button><span class="note" id="gnote"></span></div>
+  <div class="btns"><button class="sys-btn sys-btn--md" id="gfin">Show in Finder</button><span class="note" id="gnote"></span></div>
   <div class="artbox"><img id="gimg" alt=""></div></div></div></section>
 
 <section id="dlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="dn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="close">Close ✕</button></div></div>
@@ -540,7 +540,7 @@ function gOpen(r){$("gn").textContent=r.n;$("gm").textContent=r.c+" · ."+r.ext;
   const ap=r.a||BASE+r.p,hasOrig=!r.z;
   $("gfin").textContent=ONLINE?(hasOrig?"Download original":"Download preview"):"Show in Finder";
   $("gfin").onclick=ONLINE?()=>{const nm=r.n+"."+(hasOrig?r.ext:(r.v||r.t).split(".").pop());dl(enc(hasOrig?"originals/"+r.p:(r.v||r.t)),nm)}:()=>reveal(ap,$("gnote"));
-  $("gcp").style.display=ONLINE?"none":"";$("gfin").style.display=LITE?"none":"";$("gnote").textContent="";$("gcp").onclick=()=>copyText(ap);$("gdlg").className="dlg on";dlgIn()}
+  $("gfin").style.display=LITE?"none":"";$("gnote").textContent="";$("gdlg").className="dlg on";dlgIn()}
 $("gclose").onclick=dlgOut;$("morebtn").onclick=gMore;
 $("gprev").onclick=()=>{$("gprev").setAttribute("aria-checked",$("gprev").getAttribute("aria-checked")!=="true");gExts();gFilter()};
 ["gq","gext"].forEach(i=>$(i).oninput=gFilter);$("gtop").oninput=()=>{gExts();gFilter()};
