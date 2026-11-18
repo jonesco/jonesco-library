@@ -444,6 +444,8 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){load(F
 function setView(v){list.classList.toggle("lv",v==="list");$("vgrid").setAttribute("aria-pressed",v!=="list");$("vlist").setAttribute("aria-pressed",v==="list");try{localStorage.setItem("fgl-fview",v)}catch(e){}}
 $("vgrid").onclick=()=>setView("grid");$("vlist").onclick=()=>setView("list");
 try{if(localStorage.getItem("fgl-fview")==="list")setView("list")}catch(e){}
+// Changing a filter or search starts the new results at their top, not wherever the old list was scrolled to
+function listTop(el){const bar=document.querySelector(".bar"),top=el.getBoundingClientRect().top+scrollY-(bar?bar.offsetHeight:0)-116;if(scrollY>top)scrollTo({top:Math.max(0,top),behavior:"instant"})}
 let fRows=[],fShown=0;const FPAGE=60;
 let lastFam=null;
 function openFont(f,g){lastFam=g||null;$("close").hidden=!g;$("close").textContent=g?"← "+g.fam:"";closeAll();open(f)}
@@ -473,8 +475,8 @@ addEventListener("scroll",moreFonts,{passive:true});addEventListener("resize",mo
 const CATS=[["s","Serif"],["n","Sans serif"],["d","Display"],["h","Handwriting"],["m","Monospace"],["y","Symbols"]],LANGS=[[1,"Latin extended"],[2,"Cyrillic"],[4,"Greek"],[8,"Japanese"]];
 const fcat=new Set(),fw=new Set(),wb=w=>w<=300?"l":w<=500?"r":w<=700?"b":"k";
 $("chips").innerHTML=CATS.map(([k,l])=>`<button class="chip" data-k="${k}" aria-pressed="false">${l}</button>`).join("");
-$("wchips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b.dataset.w;fw.has(k)?fw.delete(k):fw.add(k);b.setAttribute("aria-pressed",fw.has(k));render()};
-$("chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b.dataset.k;fcat.has(k)?fcat.delete(k):fcat.add(k);b.setAttribute("aria-pressed",fcat.has(k));render()};
+$("wchips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b.dataset.w;fw.has(k)?fw.delete(k):fw.add(k);b.setAttribute("aria-pressed",fw.has(k));render();listTop(list)};
+$("chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;const k=b.dataset.k;fcat.has(k)?fcat.delete(k):fcat.add(k);b.setAttribute("aria-pressed",fcat.has(k));render();listTop(list)};
 function fLangs(){const have=LANGS.filter(([bit])=>FONTS.some(f=>f.l&bit)),cur=$("flang").value;     // only scripts this library really has
   $("flang").innerHTML='<option value="">Any language</option>'+have.map(([bit,l])=>`<option value="${bit}">${l}</option>`).join("");$("flang").value=have.some(([b])=>String(b)===cur)?cur:""}
 // Shown when a search or filters leave nothing: says what was asked for and offers one way out
@@ -499,7 +501,7 @@ function render(){
   fShown=0;$("loading").style.display="none";addFonts();
   if(!onGfx){const fam=new Set(FONTS.map(f=>f.fk||f.f)).size,tot=FONTS.length;$("sub").textContent=groups.size===fam?fmt(fam)+" families · "+fmt(tot)+" fonts":fmt(groups.size)+" of "+fmt(fam)+" families · "+fmt(rows.length)+" fonts"}
 }
-function fReset(){fcat.clear();fw.clear();document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));["fsty","fthk","flang","comp"].forEach(i=>$(i).value="");render()}
+function fReset(){fcat.clear();fw.clear();document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));["fsty","fthk","flang","comp"].forEach(i=>$(i).value="");render();listTop(list)}
 $("freset").onclick=fReset;
 $("ftog").onclick=()=>{const o=$("fpanel").classList.toggle("open");$("ftog").setAttribute("aria-expanded",o)};
 
@@ -515,7 +517,7 @@ function open(f){load(f);const ff=`'F_${f.f}',sans-serif`;
   $("cpn").onclick=()=>copyText(f.n);
   $("dlg").classList.add("on");dlgIn()}
 $("close").onclick=()=>{if(lastFam){const g=lastFam;$("dlg").classList.remove("on");showFam(g)}else dlgOut()};
-["q","fsty","fthk","flang","comp","sort","size"].forEach(i=>$(i).oninput=render);fLangs();
+["q","fsty","fthk","flang","comp","sort"].forEach(i=>$(i).oninput=()=>{render();listTop(list)});$("size").oninput=render;fLangs();
 $("sample").oninput=()=>document.querySelectorAll(".sp:not([data-p])").forEach(s=>s.textContent=$("sample").value);
 render();
 // Back to top: shown once you are a screen down; hidden on the landing page
@@ -556,8 +558,8 @@ function gOpen(r){$("gn").textContent=r.n;$("gm").textContent=r.c+" · ."+r.ext;
   $("gfin").onclick=ONLINE?()=>{const nm=r.n+"."+(hasOrig?r.ext:(r.v||r.t).split(".").pop());dl(enc(hasOrig?"originals/"+r.p:(r.v||r.t)),nm)}:()=>reveal(ap,$("gnote"));
   $("gfin").style.display=LITE?"none":"";$("gnote").textContent="";$("gdlg").className="dlg on";dlgIn()}
 $("gclose").onclick=dlgOut;$("morebtn").onclick=gMore;
-$("gprev").onclick=()=>{$("gprev").setAttribute("aria-checked",$("gprev").getAttribute("aria-checked")!=="true");gExts();gFilter()};
-["gq","gext"].forEach(i=>$(i).oninput=gFilter);$("gtop").oninput=()=>{gExts();gFilter()};
+$("gprev").onclick=()=>{$("gprev").setAttribute("aria-checked",$("gprev").getAttribute("aria-checked")!=="true");gExts();gFilter();listTop($("glist"))};
+["gq","gext"].forEach(i=>$(i).oninput=()=>{gFilter();listTop($("glist"))});$("gtop").oninput=()=>{gExts();gFilter();listTop($("glist"))};
 function tab(g){onGfx=g;$("hs-f").classList.toggle("is-current",!g);$("hs-g").classList.toggle("is-current",g);$("hs-f").toggleAttribute("aria-current",!g);$("hs-g").toggleAttribute("aria-current",g);$("tf").toggleAttribute("aria-current",!g);$("tg").toggleAttribute("aria-current",g);
   $("tf").setAttribute("aria-pressed",!g);$("hero").textContent=g?"Graphics":"Fonts";
   $("list").style.display=g?"none":"";$("glist").style.display=g?"":"none";document.querySelector(".fc").style.display=g?"none":"contents";
