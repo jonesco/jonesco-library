@@ -371,15 +371,15 @@ if(document.documentElement.classList.contains("home"))rd.start();
 <a class="sys-to-top" id="totop" href="#top"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 11V1.5M1.5 6 6 1.5 10.5 6"/></svg>Top</a>
 
 <section id="adlg" class="dlg sdlg localonly" role="dialog" aria-modal="true" aria-labelledby="atitle"><div class="spanel swide">
-  <h2 id="atitle">Add to the library</h2><p>Fonts, graphics or whole folders.</p>
+  <h2 id="atitle">Add files</h2>
   <div id="drop" role="button" tabindex="0" aria-label="Choose fonts or graphics to add"><span class="sys-label">Drop files here</span><small>or click to choose</small></div><input type="file" id="pick" multiple hidden>
   <div id="dropmsg" aria-live="polite"></div>
-  <div id="afollow" hidden><p>Added. Put it on library.jonesco.com too?</p><div class="btns sbtns"><button class="sys-btn sys-btn--md sys-btn--ghost" id="afno" type="button">Not now</button><button class="sys-btn sys-btn--md" id="afpub" type="button">Publish online</button></div></div>
+  <div id="afollow" hidden><p>Added. Publish online too?</p><div class="btns sbtns"><button class="sys-btn sys-btn--md sys-btn--ghost" id="afno" type="button">Not now</button><button class="sys-btn sys-btn--md" id="afpub" type="button">Publish</button></div></div>
   <div class="btns sbtns"><button class="sys-btn sys-btn--md sys-btn--ghost" id="aclose" type="button">Close</button></div>
 </div></section>
 
 <section id="pdlg" class="dlg sdlg localonly" role="dialog" aria-modal="true" aria-labelledby="ptitle"><div class="spanel">
-  <h2 id="ptitle">Publish online?</h2><p>This puts everything new in your library on library.jonesco.com, the public browse-only site. It goes live about a minute after.</p>
+  <h2 id="ptitle">Publish online?</h2><p>Updates library.jonesco.com in about a minute.</p>
   <div id="pubmsg" aria-live="polite"></div>
   <div class="btns sbtns"><button class="sys-btn sys-btn--md sys-btn--ghost" id="pclose" type="button">Close</button><button class="sys-btn sys-btn--md" id="pub" type="button">Publish</button></div>
 </div></section>
@@ -387,7 +387,7 @@ if(document.documentElement.classList.contains("home"))rd.start();
 <div id="toast" class="localonly" role="status" aria-live="polite"><span id="tmsg"></span><button type="button" id="tundo">Undo</button></div>
 
 <section id="ddlg" class="dlg sdlg localonly" role="alertdialog" aria-modal="true" aria-labelledby="dtitle" aria-describedby="dtext"><div class="spanel">
-  <h2 id="dtitle">Delete?</h2><p id="dtext">It moves to the deleted folder, where you can restore it. It leaves library.jonesco.com the next time you publish.</p>
+  <h2 id="dtitle">Delete?</h2><p id="dtext">It moves to the deleted folder.</p>
   <div id="dmsg" aria-live="polite"></div>
   <div class="btns sbtns"><button class="sys-btn sys-btn--md sys-btn--ghost" id="dno" type="button">Cancel</button><button class="sys-btn sys-btn--md warn" id="dgo" type="button">Delete</button></div>
 </div></section>
@@ -586,7 +586,7 @@ function trashIcon(){return '<svg width="20" height="20" viewBox="0 0 24 24" fil
 function delBtn(el,fn){const b=document.createElement("button");b.type="button";b.className="del localonly";b.setAttribute("aria-label","Delete");b.innerHTML=trashIcon();b.onclick=e=>{e.stopPropagation();fn()};b.onkeydown=e=>e.stopPropagation();el.append(b)}
 // Delete (local mode): asks first, then the launcher moves the files into deleted/ and the item leaves the page
 let delItems=[];
-function askDelete(items,name){if(!SERVER)return;delItems=items;closeAll();$("dtitle").textContent=items.length>1?"Delete the \u201c"+name+"\u201d set, all "+items.length+" styles?":"Delete \u201c"+name+"\u201d?";$("dmsg").textContent="";$("dgo").disabled=false;$("ddlg").classList.add("on");dlgIn();$("dno").focus()}
+function askDelete(items,name){if(!SERVER)return;delItems=items;closeAll();$("dtitle").textContent=items.length>1?"Delete \u201c"+name+"\u201d and its "+items.length+" styles?":"Delete \u201c"+name+"\u201d?";$("dmsg").textContent="";$("dgo").disabled=false;$("ddlg").classList.add("on");dlgIn();$("dno").focus()}
 async function doDelete(){$("dgo").disabled=true;
   const r=await fetch("/api/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({items:delItems})}).then(r=>r.json()).catch(()=>null);
   if(!r||r.status!=="removed"){$("dmsg").textContent="Could not delete. Is the launcher still running?";$("dgo").disabled=false;return}
