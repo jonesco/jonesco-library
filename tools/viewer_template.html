@@ -147,6 +147,11 @@ main.sys-wrap{padding-top:32px;padding-bottom:32px}   /* air between the filter 
 .del:hover,.del:focus-visible{background:var(--accent);color:#fff}
 body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,body.srv .frow:focus-within .del,body.srv .del:focus-visible{display:flex}   /* local mode only: a delete icon appears on hover */
 #dtitle{overflow-wrap:anywhere}
+.card.dropto{outline:3px solid var(--accent);outline-offset:-3px}.card.dragging{opacity:.4}
+.pull{right:52px}
+#frn{margin:-8px 0 24px}#frn form{display:flex;flex-wrap:wrap;gap:12px;align-items:center}#frn .sys-input{width:min(100%,420px)}
+#toast{position:fixed;left:24px;bottom:24px;z-index:40;display:none;align-items:center;gap:16px;max-width:calc(100% - 48px);padding:12px 16px;background:var(--ink);color:var(--paper);font-size:15px}
+#toast.on{display:flex}#toast button{flex:none;background:none;border:0;color:var(--highlight);font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;cursor:pointer;padding:6px 0}#toast button:hover{text-decoration:underline}
 .vtog{display:flex;border:var(--thin)}
 .vtog button{width:40px;height:40px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:none;color:var(--hf);cursor:pointer;transition:color var(--quick)}
 .vtog button[aria-pressed=true]{background:var(--hf);color:var(--hb)}
@@ -368,6 +373,8 @@ if(document.documentElement.classList.contains("home"))rd.start();
   <div class="btns"><button class="sys-btn sys-btn--md" id="pub" type="button"><span>Publish</span><span class="plus">↑</span></button></div>
   <div id="pubmsg" aria-live="polite"></div></div></div></section>
 
+<div id="toast" class="localonly" role="status" aria-live="polite"><span id="tmsg"></span><button type="button" id="tundo">Undo</button></div>
+
 <section id="ddlg" class="dlg localonly" role="dialog" aria-modal="true" aria-labelledby="dtitle"><div class="dpanel dsmall"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="dclose">Close ✕</button></div></div>
   <div class="sys-wrap"><h2 class="sys-display" id="dtitle">Delete</h2><p class="meta sys-label" id="dmeta"></p>
   <p class="lead">It moves to the deleted folder in the library, so you can put it back or drag it to the Trash yourself. It leaves this page now, and library.jonesco.com the next time you publish.</p>
@@ -375,7 +382,7 @@ if(document.documentElement.classList.contains("home"))rd.start();
   <div id="dmsg" aria-live="polite"></div></div></div></section>
 
 <section id="fdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="fn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="fclose">Close ✕</button></div></div>
-  <div class="sys-wrap"><h2 class="sys-display" id="fn"></h2><p class="meta sys-label" id="fm"></p><div id="fstyles"></div></div></div></section>
+  <div class="sys-wrap"><h2 class="sys-display" id="fn"></h2><p class="meta sys-label" id="fm"></p><div id="frn" class="localonly" hidden></div><div id="fstyles"></div></div></div></section>
 
 <section id="gdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="gn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="gclose">Close ✕</button></div></div>
   <div class="sys-wrap"><h2 class="sys-display" id="gn"></h2><p class="meta sys-label" id="gm"></p>
@@ -424,7 +431,7 @@ function addFonts(){
     const row=d.querySelector(".row");
     if(many){const t=document.createElement("span");t.className="sys-tag sys-tag--light stl";t.textContent=g.styles.length+" styles";row.append(t)}
     else if(f.x){const t=document.createElement("span");t.className="sys-tag sys-tag--light";t.textContent="Incomplete";t.title="Missing: "+f.x;row.append(t)}
-    d.onclick=()=>many?showFam(g):openFont(f);delBtn(d,()=>askDelete((many?g.styles.map(x=>x[0]):[f]).map(x=>({kind:"font",key:x.file})),many?g.fam:f.n,many?g.styles.length+" styles":"Font"));list.append(d);io.observe(d)});
+    d.onclick=()=>many?showFam(g):openFont(f);dragWire(d,g);delBtn(d,()=>askDelete((many?g.styles.map(x=>x[0]):[f]).map(x=>({kind:"font",key:x.file})),many?g.fam:f.n,many?g.styles.length+" styles":"Font"));list.append(d);io.observe(d)});
   fShown=Math.min(fShown+FPAGE,fRows.length);
   setTimeout(moreFonts,0)}
 // The family view: every style listed in its own face; picking one opens its detail, and Back returns here
@@ -433,8 +440,8 @@ function showFam(g){closeAll();$("fn").textContent=g.fam;const all=FONTS.filter(
     const lab=document.createElement("div");lab.className="fl";let st=f.n;if(f.n.toLowerCase().startsWith(g.fam.toLowerCase()))st=f.n.slice(g.fam.length).trim();lab.textContent=st||"Regular";
     if(f.x){const t=document.createElement("span");t.className="sys-tag sys-tag--light";t.textContent="Incomplete";t.title="Missing: "+f.x;lab.append(t)}
     const sp=document.createElement("div");sp.className="fs";sp.style.fontFamily=`'F_${f.f}',sans-serif`;sp.textContent=f.p?f.p.slice(0,30):$("sample").value;
-    r.append(lab,sp);r.onclick=()=>openFont(f,g);r.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();openFont(f,g)}};delBtn(r,()=>askDelete([{kind:"font",key:f.file}],f.n,"Font"));box.append(r)});
-  $("fdlg").classList.add("on");dlgIn()}
+    r.append(lab,sp);r.onclick=()=>openFont(f,g);r.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();openFont(f,g)}};if(SERVER&&all>1)pullBtn(r,()=>pullOut(f,g));delBtn(r,()=>askDelete([{kind:"font",key:f.file}],f.n,"Font"));box.append(r)});
+  renameUi(g);$("fdlg").classList.add("on");dlgIn()}
 $("fclose").onclick=dlgOut;
 function moreFonts(){   // keep adding batches while the end of the list is within ~1500px of the viewport
   if(!onGfx&&!document.body.classList.contains("home")&&$("dlg").classList.contains("on")===false&&fShown<fRows.length&&innerHeight+scrollY>document.documentElement.scrollHeight-1500)addFonts()}
@@ -563,7 +570,7 @@ const OKEXT=new Set(["ttf","otf","png","jpg","jpeg","gif","tif","tiff","psd","pd
 function refreshAll(){fLangs();FONTS.sort((a,b)=>{const x=a.fk||a.n.toLowerCase(),y=b.fk||b.n.toLowerCase();return x<y?-1:x>y?1:(a.w||400)-(b.w||400)||(a.it||0)-(b.it||0)||(a.n<b.n?-1:1)});GFX.sort((a,b)=>a.p<b.p?-1:1);gTops();gExts();render();if(onGfx)gFilter()}
 function merge(st){const rf=new Set(st.removed.fonts),rg=new Set(st.removed.gfx),hf=new Set(FONTS.map(f=>f.file)),hg=new Set(GFX.map(g=>g.p));
   st.fonts.forEach(f=>{if(!hf.has(f.file))FONTS.push(f)});st.gfx.forEach(g=>{if(!hg.has(g.p))GFX.push(g)});
-  FONTS=FONTS.filter(f=>!rf.has(f.file));GFX=GFX.filter(g=>!rg.has(g.p));refreshAll()}
+  FONTS=FONTS.filter(f=>!rf.has(f.file));GFX=GFX.filter(g=>!rg.has(g.p));const gp=st.groups||{};FONTS.forEach(f=>{const o=gp[f.file];if(o)setOv(f,o.k,o.fam)});refreshAll()}
 function trashIcon(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'}
 function delBtn(el,fn){const b=document.createElement("button");b.type="button";b.className="del localonly";b.setAttribute("aria-label","Delete");b.innerHTML=trashIcon();b.onclick=e=>{e.stopPropagation();fn()};b.onkeydown=e=>e.stopPropagation();el.append(b)}
 // Delete (local mode): asks first, then the launcher moves the files into deleted/ and the item leaves the page
@@ -575,6 +582,46 @@ async function doDelete(){$("dgo").disabled=true;
   const fk=new Set(delItems.filter(i=>i.kind==="font").map(i=>i.key)),gk=new Set(delItems.filter(i=>i.kind==="gfx").map(i=>i.key));
   FONTS=FONTS.filter(f=>!fk.has(f.file));GFX=GFX.filter(g=>!gk.has(g.p));dlgOut();refreshAll()}
 $("dgo").onclick=doDelete;$("dno").onclick=dlgOut;$("dclose").onclick=dlgOut;
+// Sets of fonts made by hand (local mode): drag one tile or row onto another to put them together; pull a style out from the family view
+function setOv(f,k,fam){if(!f.o)f.o=[f.fk,f.fam];f.fk=k;f.fam=fam}
+function clearOv(f){if(f.o){f.fk=f.o[0];f.fam=f.o[1];delete f.o}}
+const famOf=k=>FONTS.filter(f=>(f.fk||f.f)===k);
+const post=(url,body)=>fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).catch(()=>null);
+let tt=0,undoFn=null;
+function toast(msg,undo){$("tmsg").textContent=msg;undoFn=undo;$("tundo").hidden=!undo;$("toast").classList.add("on");clearTimeout(tt);tt=setTimeout(()=>$("toast").classList.remove("on"),9000)}
+$("tundo").onclick=()=>{$("toast").classList.remove("on");if(undoFn)undoFn();undoFn=null};
+// Apply {file,k,fam} changes to the page and the launcher, and remember how to put them back
+function regroup(changes,msg){
+  const before=changes.map(c=>{const f=FONTS.find(x=>x.file===c.file);return{f,had:!!f.o,k:f.fk,fam:f.fam}});
+  changes.forEach(c=>{const f=FONTS.find(x=>x.file===c.file);setOv(f,c.k,c.fam)});refreshAll();
+  post("/api/group",{put:changes});
+  toast(msg,()=>{const put=[],clr=[];before.forEach(b=>{if(b.had){setOv(b.f,b.k,b.fam);put.push({file:b.f.file,k:b.k,fam:b.fam})}else{clearOv(b.f);clr.push(b.f.file)}});refreshAll();post("/api/group",{put,clear:clr})})}
+function commonName(names){const w=names.map(n=>n.split(" "));let i=0;while(w.every(x=>x[i]&&x[i]===w[0][i]))i++;return w[0].slice(0,i).join(" ")}
+function joinSets(a,b){const A=famOf(a.k),B=famOf(b.k);if(!A.length||!B.length)return;
+  let name=b.fam;if(B.length===1){const c=commonName([...A,...B].map(f=>f.n));if(c.length>2)name=c}
+  const ch=A.map(f=>({file:f.file,k:b.k,fam:name}));if(name!==b.fam)B.forEach(f=>ch.push({file:f.file,k:b.k,fam:name}));
+  regroup(ch,(A.length===1?A[0].n:A.length+" fonts")+" added to "+name+".")}
+function pullOut(f,g){const key=f.fk||f.f;regroup([{file:f.file,k:"solo:"+f.file,fam:f.n}],f.n+" is out of the set.");
+  const left=fRows.find(r=>r.k===key);if(left&&left.styles.length>1)showFam(left);else dlgOut()}
+// Rename a set: the name shown on its card and at the top of its family view
+function renameUi(g){const box=$("frn");box.hidden=!SERVER;box.innerHTML="";if(!SERVER)return;
+  const show=()=>{box.innerHTML="";const b=document.createElement("button");b.type="button";b.className="freset";b.textContent="Rename set";b.onclick=edit;box.append(b)};
+  const edit=()=>{box.innerHTML="";const f=document.createElement("form"),i=document.createElement("input");i.className="sys-input";i.value=g.fam;i.maxLength=80;i.setAttribute("aria-label","Set name");
+    const ok=document.createElement("button");ok.type="submit";ok.className="sys-btn sys-btn--md";ok.innerHTML="<span>Save name</span>";
+    const no=document.createElement("button");no.type="button";no.className="sys-btn sys-btn--md sys-btn--ghost";no.textContent="Cancel";no.onclick=show;
+    f.onsubmit=e=>{e.preventDefault();const nm=i.value.trim();if(!nm||nm===g.fam){show();return}
+      const k=g.k;regroup(famOf(k).map(x=>({file:x.file,k,fam:nm})),"Renamed to "+nm+".");g.fam=nm;$("fn").textContent=nm;show()};
+    f.append(i,ok,no);box.append(f);i.focus();i.select()};
+  show()}
+let dragG=null;
+function dragWire(d,g){d.draggable=document.body.classList.contains("srv");
+  d.ondragstart=e=>{if(!SERVER)return;dragG=g;e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",g.fam);d.classList.add("dragging")};
+  d.ondragend=()=>{dragG=null;d.classList.remove("dragging");document.querySelectorAll(".dropto").forEach(x=>x.classList.remove("dropto"))};
+  d.ondragover=e=>{if(dragG&&dragG.k!==g.k){e.preventDefault();e.dataTransfer.dropEffect="move";d.classList.add("dropto")}};
+  d.ondragleave=e=>{if(!d.contains(e.relatedTarget))d.classList.remove("dropto")};
+  d.ondrop=e=>{e.preventDefault();d.classList.remove("dropto");if(dragG&&dragG.k!==g.k)joinSets(dragG,g)}}
+const UNLINK='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M10 6H5v13h13v-5"/></svg>';
+function pullBtn(el,fn){const b=document.createElement("button");b.type="button";b.className="del pull localonly";b.setAttribute("aria-label","Pull out of this set");b.title="Pull out of this set";b.innerHTML=UNLINK;b.onclick=e=>{e.stopPropagation();fn()};b.onkeydown=e=>e.stopPropagation();el.append(b)}
 function dropState(on){SERVER=on;document.body.classList.toggle("srv",on);$("hadd").hidden=!on;$("hpub").hidden=!on}
 function openAdd(){if(!SERVER||$("adlg").classList.contains("on"))return;closeAll();$("afollow").hidden=true;$("dropmsg").textContent="";$("adlg").classList.add("on");dlgIn()}
 function openPub(){if(!SERVER)return;closeAll();$("pdlg").classList.add("on");dlgIn();pubPoll()}
@@ -611,7 +658,7 @@ addEventListener("dragenter",e=>{e.preventDefault();dragN++;if(SERVER&&[...(e.da
 addEventListener("dragleave",e=>{dragN=Math.max(0,dragN-1);if(!dragN)$("drop").classList.remove("over")});
 addEventListener("dragover",e=>e.preventDefault());
 addEventListener("drop",async e=>{e.preventDefault();dragN=0;$("drop").classList.remove("over");
-  if(!SERVER)return;openAdd();
+  if(!SERVER||![...(e.dataTransfer.types||[])].includes("Files"))return;openAdd();   // only files from outside open the Add dialog, not a font tile dragged onto another
   const ens=[...e.dataTransfer.items].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);   // read entries before any await
   const list=(await Promise.all(ens.map(en=>walk(en,"")))).flat();addAll(list)});
 route();

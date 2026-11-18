@@ -39,6 +39,10 @@ class H(http.server.SimpleHTTPRequestHandler):
                 kind = "font" if os.path.splitext(name)[1].lower() in pipeline.FONT_EXT else "gfx"
                 if n > MAX[kind]: s.rfile.read(0); return s._json(200, {"status": "rejected", "reason": "file too large"})
                 return s._json(200, pipeline.add(name, s.rfile.read(n)))
+            if u.path == "/api/group":       # {"put": [{"file","k","fam"}], "clear": ["file"]}: sets of fonts the user made by hand
+                b = json.loads(s.rfile.read(n) or b"{}")
+                put = [{"file": x["file"], "k": x["k"], "fam": x["fam"]} for x in b.get("put", []) if all(isinstance(x.get(k), str) and x[k] for k in ("file", "k", "fam"))]
+                return s._json(200, pipeline.set_groups(put, [f for f in b.get("clear", []) if isinstance(f, str)]))
             if u.path == "/api/delete":      # moves the item's files into deleted/ and hides it; the body is {"items": [{"kind": "font"|"gfx", "key": "..."}]}
                 items = json.loads(s.rfile.read(n) or b"{}").get("items", [])
                 done = [pipeline.remove(i["kind"], i["key"]) for i in items if i.get("kind") in ("font", "gfx") and isinstance(i.get("key"), str) and i["key"]]

@@ -23,7 +23,19 @@ def inside(p): r = os.path.realpath(p); return r.startswith(os.path.realpath(ROO
 
 def state():
     a = jload(D("added.json"), {"fonts": [], "gfx": []})
-    return {"fonts": a["fonts"], "gfx": a["gfx"], "removed": jload(D("removed-items.json"), {"fonts": [], "gfx": []})}
+    return {"fonts": a["fonts"], "gfx": a["gfx"], "removed": jload(D("removed-items.json"), {"fonts": [], "gfx": []}), "groups": groups()}
+
+def groups():
+    """Fonts the user has put together (or pulled out) by hand: {font file: {"k": family key, "fam": family name}}."""
+    return jload(D("groups.json"), {})
+
+def set_groups(put, clear):
+    with LOCK:
+        g = groups()
+        for x in put: g[x["file"]] = {"k": x["k"], "fam": x["fam"]}
+        for f in clear: g.pop(f, None)
+        jsave(D("groups.json"), g)
+    return {"status": "ok"}
 
 def add_font(name, data):
     ext = os.path.splitext(name)[1].lower()

@@ -68,7 +68,7 @@ if __name__ == "__main__":
     fonts = []
     for f in FONTS:
         if not fr.get(f["file"]): continue
-        f = dict(f); f["file"] = fr[f["file"]]; f.pop("s", None)
+        f = dict(f); f["file"] = fr[f["file"]]; f.pop("s", None); f.pop("o", None)
         if f.get("p"): f["p"] = "".join(c for c in f["p"] if ord(c) in KEEP)
         fonts.append(f)
     gfx = []
