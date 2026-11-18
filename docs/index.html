@@ -146,7 +146,7 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
 #fsty{order:1}#fthk{order:2}#sort{order:3}#flang{order:4}#comp{order:5}#freset{order:6;margin-left:auto}
 #ftog{display:inline-flex;align-items:center;gap:10px;flex:none}#ftog .chev{transition:transform var(--quick)}#ftog[aria-expanded="true"] .chev{transform:rotate(180deg)}#fcount:empty{display:none}
 .fpanel{display:none}.fpanel.open{display:flex}   /* filters fold away on every screen size; the button is the first control in the bar */
-.freset{font:700 13px/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:3px;padding:8px 4px;transition:color var(--quick)}.freset:hover{color:var(--accent)}.freset[hidden]{display:none}   /* type in the surface's ink, a magenta underline, magenta type on hover */
+.freset{display:inline-flex;align-items:center;height:40px;padding:0 16px;border:0;border-radius:0;background:var(--accent);color:#fff;font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;cursor:pointer;transition:filter var(--quick)}.freset:hover{filter:brightness(.88)}.freset[hidden]{display:none}   /* a small magenta button, white type */
 .gc{display:none;flex-wrap:wrap;gap:12px;align-items:center}
 body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}   /* a short list still pushes the footer to the bottom of the window, so the page background never shows under it */
 main.sys-wrap{width:100%;flex:1 0 auto;padding-top:32px;padding-bottom:32px}   /* air between the filter bar and the first row, and between the last row and the footer */
@@ -172,7 +172,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
 #dtitle{overflow-wrap:anywhere}
 .card.dropto{outline:3px solid var(--accent);outline-offset:-3px}.card.dragging{opacity:.4}
 .pull{right:52px}
-#frn[hidden]{display:none}.ftools{display:flex;align-items:center;gap:16px;margin:-8px 0 24px}#frn{height:40px;margin:0;flex:1 1 auto;min-width:0;display:flex;align-items:center}#frn .freset{padding:0}#frn form{display:flex;gap:8px;align-items:center;width:100%;min-width:0}#frn .sys-input{flex:1 1 auto;min-width:0;max-width:420px}#frn .sys-btn{flex:none}   /* the rename row is as tall as the form, so opening it moves nothing */
+#frn[hidden]{display:none}.ftools{display:flex;align-items:center;gap:16px;margin:-8px 0 24px}#frn{height:40px;margin:0;flex:1 1 auto;min-width:0;display:flex;align-items:center}.rnlink{font:700 13px/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0}.rnlink:hover{color:var(--accent)}#frn form{display:flex;gap:8px;align-items:center;width:100%;min-width:0}#frn .sys-input{flex:1 1 auto;min-width:0;max-width:420px}#frn .sys-btn{flex:none}   /* the rename row is as tall as the form, so opening it moves nothing */
 #toast{position:fixed;left:24px;bottom:24px;z-index:40;display:none;align-items:center;gap:16px;max-width:calc(100% - 48px);padding:12px 16px;background:var(--ink);color:var(--paper);font-size:15px}
 #toast.on{display:flex}#toast button{flex:none;background:none;border:0;color:var(--highlight);font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;cursor:pointer;padding:6px 0}#toast button:hover{text-decoration:underline}
 .vtog>button{display:grid;place-items:center;min-width:44px;padding:0 10px;color:var(--hf)}   /* the grid/list switch is the system's medium content switcher: 40px, the height of a field */
@@ -272,7 +272,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
   .fpanel{padding-top:8px}
   /* phone: search and sample on their own rows, then Filters beside the size slider */
   #q{order:1}.vtog{order:1}.vtog>button{min-height:40px}#sample{order:2}#ftog{order:3;height:44px}.bar .sys-controls{order:4;flex:1 1 0;width:auto;min-width:0}.fpanel{order:5}
-  .chip{height:44px}.fsel .sys-input{flex:1 1 140px;min-width:0;height:44px}#flang{order:3}#sort{order:4;flex:1 1 100%}#freset{margin-left:0}   /* phones: the selects, then sort, then the toggle and Reset filters at the bottom */
+  .chip{height:44px}.fsel .sys-input{flex:1 1 140px;min-width:0;height:44px}#flang{order:3}#sort{order:4;flex:1 1 100%}#freset{margin-left:0;height:44px}   /* phones: the selects, then sort, then the toggle and Reset filters at the bottom */
 }
 @media (max-width:349px){.sys-brand span{display:none}}
 /* Until the Trade Gothic files arrive, the text stays hidden (the backgrounds and the animation show), so there is no flash of fallback fonts */
@@ -645,7 +645,7 @@ function pullOut(f,g){const key=f.fk||f.f;regroup([{file:f.file,k:(f.o?f.o[0]:ke
   const left=fRows.find(r=>r.k===key);if(left&&left.styles.length>1)showFam(left);else dlgOut()}
 // Rename a set: the name shown on its card and at the top of its family view
 function renameUi(g){const box=$("frn");box.hidden=!SERVER;box.innerHTML="";if(!SERVER)return;
-  const show=()=>{box.innerHTML="";const b=document.createElement("button");b.type="button";b.className="freset";b.textContent="Rename set";b.onclick=edit;box.append(b)};
+  const show=()=>{box.innerHTML="";const b=document.createElement("button");b.type="button";b.className="rnlink";b.textContent="Rename set";b.onclick=edit;box.append(b)};
   const edit=()=>{box.innerHTML="";const f=document.createElement("form"),i=document.createElement("input");i.className="sys-input";i.value=g.fam;i.maxLength=80;i.setAttribute("aria-label","Set name");
     const ok=document.createElement("button");ok.type="submit";ok.className="sys-btn sys-btn--md";ok.innerHTML="<span>Save name</span>";
     const no=document.createElement("button");no.type="button";no.className="sys-btn sys-btn--md sys-btn--ghost";no.textContent="Cancel";no.onclick=show;
