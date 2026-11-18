@@ -174,11 +174,10 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
 #frn[hidden]{display:none}.ftools{display:flex;align-items:center;gap:16px;margin:-8px 0 24px}#frn{height:40px;margin:0;flex:1 1 auto;min-width:0;display:flex;align-items:center}#frn .freset{padding:0}#frn form{display:flex;gap:8px;align-items:center;width:100%;min-width:0}#frn .sys-input{flex:1 1 auto;min-width:0;max-width:420px}#frn .sys-btn{flex:none}   /* the rename row is as tall as the form, so opening it moves nothing */
 #toast{position:fixed;left:24px;bottom:24px;z-index:40;display:none;align-items:center;gap:16px;max-width:calc(100% - 48px);padding:12px 16px;background:var(--ink);color:var(--paper);font-size:15px}
 #toast.on{display:flex}#toast button{flex:none;background:none;border:0;color:var(--highlight);font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;cursor:pointer;padding:6px 0}#toast button:hover{text-decoration:underline}
-.vtog{display:flex;border:var(--thin)}
-.vtog button{width:40px;height:40px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:none;color:var(--hf);cursor:pointer;transition:color var(--quick)}
-.vtog button[aria-pressed=true]{background:var(--hf);color:var(--hb)}
-.vtog button:hover:not([aria-pressed=true]),.vtog button:focus-visible{color:var(--highlight)}
-:root[data-theme=dark] .vtog button:hover:not([aria-pressed=true]),:root[data-theme=dark] .vtog button:focus-visible{color:var(--accent)}
+.vtog>button{display:grid;place-items:center;min-width:44px;padding:0 10px;color:var(--hf)}   /* the grid/list switch is the system's medium content switcher: 40px, the height of a field */
+.vtog>[aria-pressed=true],.vtog>[aria-pressed=true]:hover{background:var(--hf);color:var(--hb)}
+.vtog>button:hover:not([aria-pressed=true]),.vtog>button:focus-visible{color:var(--highlight)}
+:root[data-theme=dark] .vtog>button:hover:not([aria-pressed=true]),:root[data-theme=dark] .vtog>button:focus-visible{color:var(--accent)}
 /* List view: one row per font, name on the left and the sample on one line */
 #list.lv{grid-template-columns:1fr}
 .lv .card{flex-direction:row;align-items:center;justify-content:flex-start;gap:24px;min-height:0;padding:14px 56px 14px 20px}
@@ -271,7 +270,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
 @media (max-width:700px){
   .fpanel{padding-top:8px}
   /* phone: search and sample on their own rows, then Filters beside the size slider */
-  #q{order:1}.vtog{order:1}.vtog button{width:44px;height:40px}#sample{order:2}#ftog{order:3;height:44px}.bar .sys-controls{order:4;flex:1 1 0;width:auto;min-width:0}.fpanel{order:5}
+  #q{order:1}.vtog{order:1}.vtog>button{min-height:40px}#sample{order:2}#ftog{order:3;height:44px}.bar .sys-controls{order:4;flex:1 1 0;width:auto;min-width:0}.fpanel{order:5}
   .chip{height:44px}.fsel{width:100%}.fsel .sys-input{flex:1 1 140px;min-width:0;height:44px}#sortrow{margin-left:0;width:100%}
 }
 @media (max-width:349px){.sys-brand span{display:none}}
@@ -365,7 +364,7 @@ if(document.documentElement.classList.contains("home"))rd.start();
     <input class="sys-input" id="q" placeholder="Search by name" type="search" aria-label="Search fonts">
     <input class="sys-input" id="sample" value="The quick brown fox jumps over the lazy dog 0123456789" aria-label="Sample text">
     <div class="sys-controls"><label for="size">Size</label><input type="range" class="sys-slider" id="size" min="14" max="96" value="36"></div>
-    <div class="vtog" role="group" aria-label="View">
+    <div class="sys-content-switcher sys-content-switcher--md vtog" role="group" aria-label="View">
       <button type="button" id="vgrid" aria-pressed="true" aria-label="Grid view" title="Grid view"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></button>
       <button type="button" id="vlist" aria-pressed="false" aria-label="List view" title="List view"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
     </div>
