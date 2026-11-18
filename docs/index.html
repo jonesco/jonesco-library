@@ -135,8 +135,12 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
 /* Font filters, after Google Fonts: category chips, a few labeled dropdowns, sort, reset; on phones they fold behind one button */
 .fpanel{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding-top:4px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{background:none;border:var(--thin);color:var(--ink);font:700 13px/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;padding:0 14px;height:36px;cursor:pointer;transition:color var(--quick)}
-.chip:hover{color:var(--accent)}.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper)}.chip[aria-pressed="true"]:hover{color:var(--paper)}
+.chip{--x:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M1 1l8 8M9 1L1 9'/%3E%3C/svg%3E");display:inline-flex;align-items:center;background:#2b2b2b;color:#fff;border:0;border-radius:999px;font:700 13px/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;padding:0 14px;height:32px;cursor:pointer;transition:background var(--quick),color var(--quick)}   /* a filter is a tag: dark gray on the black band, white with a clear (x) when chosen */
+.chip:hover{background:#3b3b3b}
+.chip[aria-pressed="true"]{background:#fff;color:#000}.chip[aria-pressed="true"]:hover{background:#fff}
+.chip[aria-pressed="true"]::after{content:"";width:9px;height:9px;margin-left:8px;background:currentColor;-webkit-mask:var(--x) center/contain no-repeat;mask:var(--x) center/contain no-repeat}
+:root[data-theme=dark] .chip{background:#edebe6;color:#000}:root[data-theme=dark] .chip:hover{background:#e0ddd5}   /* on the white band: newsprint, and black when chosen */
+:root[data-theme=dark] .chip[aria-pressed="true"],:root[data-theme=dark] .chip[aria-pressed="true"]:hover{background:#000;color:#fff}
 .fsel{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.fsel .sys-input{width:auto;height:36px;font-size:15px}
 #sortrow{margin-left:auto}
 #ftog{display:inline-flex;align-items:center;gap:10px;flex:none}#ftog .chev{transition:transform var(--quick)}#ftog[aria-expanded="true"] .chev{transform:rotate(180deg)}#fcount:empty{display:none}
