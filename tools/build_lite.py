@@ -80,6 +80,7 @@ if __name__ == "__main__":
         gfx.append(g)
     h = h.replace(fm.group(1), json.dumps(fonts, ensure_ascii=False)).replace(gm.group(1), json.dumps(gfx, ensure_ascii=False))
     h = h.replace('href="system/fonts/', 'href="%sfonts/' % PIN)
+    h = h.replace('url("system/fonts/', 'url("%sfonts/' % PIN)
     h = h.replace('href="system/system.css"', 'href="%ssystem.css"' % PIN).replace('href="system/patterns.css"', 'href="%spatterns.css"' % PIN)
     h = h.replace("/*ONLINE*/false", "true").replace("/*LITE*/false", "true")
     open(os.path.join(OUT, "index.html"), "w").write(h)
