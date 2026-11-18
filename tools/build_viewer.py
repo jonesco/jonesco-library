@@ -96,12 +96,14 @@ for f in fonts:
         try: tc[k] = traits(os.path.join(root, f["file"]), f["n"])
         except Exception: tc[k] = {"k": "d", "w": 400, "wd": 1, "it": int(bool(f.get("i"))), "l": 0}
     f.update(tc[k]); f.pop("t", None)
-from family import family_of
+from family import family_of, clean_coded
 fp_ = os.path.join(root, "data", "family.cache")
 fc = json.load(open(fp_)) if os.path.exists(fp_) else {}
 for f in fonts:                                 # which family each font belongs to (cached by file)
     if f["file"] not in fc: fc[f["file"]] = family_of(os.path.join(root, f["file"]), f["n"], f["f"])
     f["fam"], f["fk"] = fc[f["file"]]
+    cc = clean_coded(f["fam"])
+    if cc: f["fam"], f["fk"] = cc
 json.dump(fc, open(fp_, "w"))
 _keys = {f["fk"] for f in fonts}                # "Aachen D" is "Aachen" with a one-letter suffix: join them
 _join = {}

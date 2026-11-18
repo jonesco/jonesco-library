@@ -20,3 +20,14 @@ def family_of(path, name="", ps=""):
     if not fam or JUNK.fullmatch(fam): fam, has16 = re.sub(r"[-_ ]+", " ", re.sub(r"(?<=[a-z])(?=[A-Z])", " ", (ps or "").split("-")[0])).strip() or name, False
     if not has16: fam = strip_style(fam)
     return fam, re.sub(r"[^a-z0-9]", "", fam.lower()) or re.sub(r"[^a-z0-9]", "", (ps or name).lower())
+
+
+# Old Mac fonts whose family name carries a leftover ID and a style code, e.g. "12 ITC Novarese** 06442" or "12 ITC Novarese** Ultra 10442".
+# Without this every weight is its own family. They group by the cleaned name, in a set of their own ("~old"), so they never merge into a
+# clean family of the same name from another collection (that would show every style twice).
+CODED = re.compile(r"^\d{1,3} (?P<name>[A-Za-z][^*]*?)\*+\s*(?:\S.*?\s+)?\d{5}$")
+def clean_coded(fam):
+    m = CODED.match(fam or "")
+    if not m: return None
+    name = m.group("name").strip()
+    return name, re.sub(r"[^a-z0-9]", "", name.lower()) + "~old"
