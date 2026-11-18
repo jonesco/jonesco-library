@@ -141,6 +141,7 @@ for g in gfx:                                  # collection + set, from the fold
     m = re.search(r"Volume (\d\d)\s*/(\d\d[A-Z])$", g["c"])
     if m and m.group(2) in _de: g["set"], g["sv"] = _de[m.group(2)], int(m.group(1))
     elif len(parts) > 1 and g["col"] != "Design Elements": g["set"] = re.sub(r"#\d+$", "", parts[1]).replace("_ ", " ").replace("_", " ").strip()
+        if g["set"].isupper() and len(g["set"]) > 4: g["set"] = g["set"].title()   # an all-caps folder name reads as a name; short ones (EPS) are acronyms and stay
     if g["col"] == "Design Elements" and "set" not in g: g["set"] = "Other"
 gfx.sort(key=lambda g: g["p"])
 html = open(os.path.join(here, "viewer_template.html")).read().replace("/*DATA*/[]", json.dumps(fonts, ensure_ascii=False)).replace("/*GFX*/[]", json.dumps(gfx, ensure_ascii=False))
