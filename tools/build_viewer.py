@@ -116,7 +116,7 @@ print(len(_join), "one-letter-suffix families joined:", sorted(v[0] for v in _jo
 _gp = os.path.join(root, "data", "groups.json")           # sets made by hand in the viewer win over the automatic families; "o" keeps the automatic one so it can be undone
 _grp = json.load(open(_gp)) if os.path.exists(_gp) else {}
 for f in fonts:
-    if f["file"] in _grp: f["o"] = [f["fk"], f["fam"]]; f["fam"], f["fk"] = _grp[f["file"]]["fam"], _grp[f["file"]]["k"]
+    if f["file"] in _grp: f["o"] = [f["fk"], f["fam"]]; f["fam"], f["fk"] = _grp[f["file"]]["fam"], (f["fk"] + "~" + f["file"] if _grp[f["file"]]["k"].startswith("solo:") else _grp[f["file"]]["k"])
 fonts.sort(key=lambda f: (f["fk"], f.get("w", 400), f.get("it", 0), f["n"].lower()))
 json.dump(tc, open(tp, "w"))
 json.dump(cov, open(cov_path, "w"))

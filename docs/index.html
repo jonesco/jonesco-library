@@ -570,7 +570,7 @@ const OKEXT=new Set(["ttf","otf","png","jpg","jpeg","gif","tif","tiff","psd","pd
 function refreshAll(){fLangs();FONTS.sort((a,b)=>{const x=a.fk||a.n.toLowerCase(),y=b.fk||b.n.toLowerCase();return x<y?-1:x>y?1:(a.w||400)-(b.w||400)||(a.it||0)-(b.it||0)||(a.n<b.n?-1:1)});GFX.sort((a,b)=>a.p<b.p?-1:1);gTops();gExts();render();if(onGfx)gFilter()}
 function merge(st){const rf=new Set(st.removed.fonts),rg=new Set(st.removed.gfx),hf=new Set(FONTS.map(f=>f.file)),hg=new Set(GFX.map(g=>g.p));
   st.fonts.forEach(f=>{if(!hf.has(f.file))FONTS.push(f)});st.gfx.forEach(g=>{if(!hg.has(g.p))GFX.push(g)});
-  FONTS=FONTS.filter(f=>!rf.has(f.file));GFX=GFX.filter(g=>!rg.has(g.p));const gp=st.groups||{};FONTS.forEach(f=>{const o=gp[f.file];if(o)setOv(f,o.k,o.fam)});refreshAll()}
+  FONTS=FONTS.filter(f=>!rf.has(f.file));GFX=GFX.filter(g=>!rg.has(g.p));const gp=st.groups||{};FONTS.forEach(f=>{const o=gp[f.file];if(o)setOv(f,o.k.startsWith("solo:")?(f.o?f.o[0]:f.fk)+"~"+f.file:o.k,o.fam)});refreshAll()}
 function trashIcon(){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'}
 function delBtn(el,fn){const b=document.createElement("button");b.type="button";b.className="del localonly";b.setAttribute("aria-label","Delete");b.innerHTML=trashIcon();b.onclick=e=>{e.stopPropagation();fn()};b.onkeydown=e=>e.stopPropagation();el.append(b)}
 // Delete (local mode): asks first, then the launcher moves the files into deleted/ and the item leaves the page
@@ -601,7 +601,7 @@ function joinSets(a,b){const A=famOf(a.k),B=famOf(b.k);if(!A.length||!B.length)r
   let name=b.fam;if(B.length===1){const c=commonName([...A,...B].map(f=>f.n));if(c.length>2)name=c}
   const ch=A.map(f=>({file:f.file,k:b.k,fam:name}));if(name!==b.fam)B.forEach(f=>ch.push({file:f.file,k:b.k,fam:name}));
   regroup(ch,(A.length===1?A[0].n:A.length+" fonts")+" added to "+name+".")}
-function pullOut(f,g){const key=f.fk||f.f;regroup([{file:f.file,k:"solo:"+f.file,fam:f.n}],f.n+" is out of the set.");
+function pullOut(f,g){const key=f.fk||f.f;regroup([{file:f.file,k:(f.o?f.o[0]:key)+"~"+f.file,fam:f.n}],f.n+" is out of the set.");   // the key starts with the old family's so the tile lands next to it, not at the end of the alphabet
   const left=fRows.find(r=>r.k===key);if(left&&left.styles.length>1)showFam(left);else dlgOut()}
 // Rename a set: the name shown on its card and at the top of its family view
 function renameUi(g){const box=$("frn");box.hidden=!SERVER;box.innerHTML="";if(!SERVER)return;
