@@ -284,7 +284,7 @@ const rd=(()=>{
       const rr=r*(1+.025*Math.sin(3*a+b.p[0])+.015*Math.sin(7*a+b.p[1])+.01*Math.sin(12*a+b.p[2]));   // a round drop with a barely uneven edge
       if(d<rr){const i=y*W+x;u[i]=1;v[i]=0}}
     b.r+=b.sp;return b.r>b.max}
-  function burst(e){if(!u)return;const[cx,cy]=cellAt(e),max=Math.min(.36*Math.min(W,H),260/cs);
+  function burst(e){if(!u)return;const[cx,cy]=cellAt(e),max=Math.min(.36*Math.min(W,H),260/cs)*(e.pointerType==="touch"?.6:1);   // a finger tap clears 60% of what a click does
     const b={cx,cy,r:2,max,sp:Math.max(4.5,15/cs),p:[0,1,2,3].map(()=>Math.random()*6.2832)};
     if(!reduce){try{navigator.vibrate&&navigator.vibrate(35)}catch(_){}}
     if(reduce||!raf){while(!boomStep(b)){}for(let k=0;k<90;k++)step();draw()}else booms.push(b)}   // with motion off the clearing happens at once
