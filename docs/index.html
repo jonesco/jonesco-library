@@ -141,8 +141,9 @@ select.sys-input{padding-right:34px;cursor:pointer;background-repeat:no-repeat;b
 .chip[aria-pressed="true"]::after{content:"";width:9px;height:9px;margin-left:8px;background:currentColor;-webkit-mask:var(--x) center/contain no-repeat;mask:var(--x) center/contain no-repeat}
 :root[data-theme=dark] .chip{background:#edebe6;color:#000}:root[data-theme=dark] .chip:hover{background:#e0ddd5}   /* on the white band: newsprint, and black when chosen */
 :root[data-theme=dark] .chip[aria-pressed="true"],:root[data-theme=dark] .chip[aria-pressed="true"]:hover{background:#000;color:#fff}
-.fsel{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.fsel .sys-input{width:auto;height:36px;font-size:15px}
-#sortrow{margin-left:auto}
+.fsel{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}.fsel .sys-input{width:auto;height:40px;font-size:16px}
+/* desktop: style, thickness, sort, language, the toggle, and Reset filters at the far right */
+#fsty{order:1}#fthk{order:2}#sort{order:3}#flang{order:4}#comp{order:5}#freset{order:6;margin-left:auto}
 #ftog{display:inline-flex;align-items:center;gap:10px;flex:none}#ftog .chev{transition:transform var(--quick)}#ftog[aria-expanded="true"] .chev{transform:rotate(180deg)}#fcount:empty{display:none}
 .fpanel{display:none}.fpanel.open{display:flex}   /* filters fold away on every screen size; the button is the first control in the bar */
 .freset{font:700 13px/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:8px 4px}.freset:hover{color:var(--accent)}.freset[hidden]{display:none}
@@ -271,7 +272,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
   .fpanel{padding-top:8px}
   /* phone: search and sample on their own rows, then Filters beside the size slider */
   #q{order:1}.vtog{order:1}.vtog>button{min-height:40px}#sample{order:2}#ftog{order:3;height:44px}.bar .sys-controls{order:4;flex:1 1 0;width:auto;min-width:0}.fpanel{order:5}
-  .chip{height:44px}.fsel{width:100%}.fsel .sys-input{flex:1 1 140px;min-width:0;height:44px}#sortrow{margin-left:0;width:100%}
+  .chip{height:44px}.fsel .sys-input{flex:1 1 140px;min-width:0;height:44px}#flang{order:3}#sort{order:4;flex:1 1 100%}#freset{margin-left:0}   /* phones: the selects, then sort, then the toggle and Reset filters at the bottom */
 }
 @media (max-width:349px){.sys-brand span{display:none}}
 /* Until the Trade Gothic files arrive, the text stays hidden (the backgrounds and the animation show), so there is no flash of fallback fonts */
@@ -377,8 +378,8 @@ if(document.documentElement.classList.contains("home"))rd.start();
         <select class="sys-input" id="flang" aria-label="Language"><option value="">Any language</option></select>
         <button class="sys-toggle" type="button" role="switch" aria-checked="false" id="comp"><span class="sys-toggle__track" aria-hidden="true"></span>Hide incomplete fonts</button>
         <button class="freset" id="freset" hidden>Reset filters</button>
+        <select class="sys-input" id="sort" aria-label="Sort"><option value="n">Sort: Name A to Z</option><option value="g">Sort: Most glyphs</option><option value="w">Sort: Light to heavy</option><option value="r">Sort: Random</option></select>
       </div>
-      <div class="fsel" id="sortrow"><select class="sys-input" id="sort" aria-label="Sort"><option value="n">Sort: Name A to Z</option><option value="g">Sort: Most glyphs</option><option value="w">Sort: Light to heavy</option><option value="r">Sort: Random</option></select></div>
     </div>
   </span>
   <span class="gc">
