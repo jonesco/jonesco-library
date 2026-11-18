@@ -471,7 +471,7 @@ function render(){
   const groups=new Map();rows.forEach(r=>{const k=r[0].fk||r[0].f;let g=groups.get(k);if(!g){g={k,fam:r[0].fam||r[0].n,styles:[]};groups.set(k,g)}g.styles.push(r)});
   fRows=[...groups.values()];fRows.forEach(g=>{g.styles.sort((a,b)=>(a[0].w||400)-(b[0].w||400)||(a[0].it||0)-(b[0].it||0)||(a[0].n<b[0].n?-1:1));
     g.rep=g.styles.filter(r=>!r[0].it).sort((a,b)=>Math.abs(a[0].w-400)-Math.abs(b[0].w-400))[0]||g.styles[0]});
-  if(sort==="n"||sort==="")fRows.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:0);
+  if(sort==="n"||sort==="")fRows.forEach(g=>g.lab=(g.styles.length>1?g.fam:g.rep[0].n).toLowerCase()),fRows.sort((a,b)=>a.lab<b.lab?-1:a.lab>b.lab?1:a.k<b.k?-1:a.k>b.k?1:0);   // A to Z by the name on the card, not the font's internal family key
   fShown=0;$("loading").style.display="none";addFonts();
   if(!onGfx){const fam=new Set(FONTS.map(f=>f.fk||f.f)).size,tot=FONTS.length;$("sub").textContent=groups.size===fam?fmt(fam)+" families · "+fmt(tot)+" fonts":fmt(groups.size)+" of "+fmt(fam)+" families · "+fmt(rows.length)+" fonts"}
 }
