@@ -251,7 +251,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
   .hdr-r,.sys-nav{gap:16px}
   .hero{padding-top:32px;padding-bottom:24px}.herorow{flex-direction:column;align-items:stretch;gap:20px}#drop{width:100%}#dropmsg{max-width:none}
   .bar{position:static}.bar .sys-wrap{padding-top:12px;padding-bottom:12px;gap:8px}
-  .bar [type=search]{width:100%}.bar select.sys-input{flex:1 1 140px;min-width:0}.bar #sample{flex:1 1 100%;min-width:0}
+  .bar [type=search]{width:auto;flex:1 1 0;min-width:0}.bar select.sys-input{flex:1 1 140px;min-width:0}.bar #sample{flex:1 1 100%;min-width:0}
   .bar .sys-input{height:44px}.bar .sys-controls{width:100%}.bar .sys-controls input{flex:1}
   .sys-btn--md{min-height:44px}
   #list{grid-template-columns:1fr}.card{padding:16px;min-height:120px}.sp{font-size:min(var(--sz,36px),11vw)}
@@ -271,7 +271,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
 @media (max-width:700px){
   .fpanel{padding-top:8px}
   /* phone: search and sample on their own rows, then Filters beside the size slider */
-  #q{order:1}#sample{order:2}#ftog{order:3;height:44px}.bar .sys-controls{order:4;flex:1 1 0;width:auto;min-width:0}.fpanel{order:5}
+  #q{order:1}.vtog{order:1}.vtog button{width:44px;height:40px}#sample{order:2}#ftog{order:3;height:44px}.bar .sys-controls{order:4;flex:1 1 0;width:auto;min-width:0}.fpanel{order:5}
   .chip{height:44px}.fsel{width:100%}.fsel .sys-input{flex:1 1 140px;min-width:0;height:44px}#sortrow{margin-left:0;width:100%}
 }
 @media (max-width:349px){.sys-brand span{display:none}}
