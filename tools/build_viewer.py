@@ -5,7 +5,7 @@ def pretty(ps):                      # GarageGothic-Black -> Garage Gothic Black
     t = re.sub(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Za-z])(?=\d)|[-_]+", " ", ps or "")
     return re.sub(r"\s+", " ", t).strip() or ps
 fonts = []
-NOT_FONTS = {"graphics", "added", "removed", "removed-items", "fontnames", "gfxhash", "de-sets"}
+NOT_FONTS = {"graphics", "added", "removed", "removed-items", "fontnames", "gfxhash", "de-sets", "groups"}
 for m in sorted(glob.glob(os.path.join(root, "data", "*.json"))):
     if os.path.splitext(os.path.basename(m))[0] in NOT_FONTS: continue
     for r in json.load(open(m)):
