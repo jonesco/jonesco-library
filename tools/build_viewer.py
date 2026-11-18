@@ -115,6 +115,9 @@ for f in fonts:
 for f in fonts:
     if f["fk"] in _join: f["fam"], f["fk"] = _join[f["fk"]]
 print(len(_join), "one-letter-suffix families joined:", sorted(v[0] for v in _join.values())[:20])
+from autoset import autosets                   # families the file names split but the folder and name say are one
+_gp0 = os.path.join(root, "data", "groups.json")
+print("autosets: %d sets, %d fonts moved, %d skipped" % autosets(fonts, set(json.load(open(_gp0)) if os.path.exists(_gp0) else {})))
 _gp = os.path.join(root, "data", "groups.json")           # sets made by hand in the viewer win over the automatic families; "o" keeps the automatic one so it can be undone
 _grp = json.load(open(_gp)) if os.path.exists(_gp) else {}
 for f in fonts:
