@@ -158,7 +158,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
 #dtitle{overflow-wrap:anywhere}
 .card.dropto{outline:3px solid var(--accent);outline-offset:-3px}.card.dragging{opacity:.4}
 .pull{right:52px}
-#frn{height:40px;margin:-8px 0 24px;display:flex;align-items:center}#frn .freset{padding:0}#frn form{display:flex;gap:8px;align-items:center;width:100%;min-width:0}#frn .sys-input{flex:1 1 auto;min-width:0;max-width:420px}#frn .sys-btn{flex:none}   /* the rename row is as tall as the form, so opening it moves nothing */
+#frn[hidden]{display:none}#frn{height:40px;margin:-8px 0 24px;display:flex;align-items:center}#frn .freset{padding:0}#frn form{display:flex;gap:8px;align-items:center;width:100%;min-width:0}#frn .sys-input{flex:1 1 auto;min-width:0;max-width:420px}#frn .sys-btn{flex:none}   /* the rename row is as tall as the form, so opening it moves nothing */
 #toast{position:fixed;left:24px;bottom:24px;z-index:40;display:none;align-items:center;gap:16px;max-width:calc(100% - 48px);padding:12px 16px;background:var(--ink);color:var(--paper);font-size:15px}
 #toast.on{display:flex}#toast button{flex:none;background:none;border:0;color:var(--highlight);font:700 var(--size-tag)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase;cursor:pointer;padding:6px 0}#toast button:hover{text-decoration:underline}
 .vtog{display:flex;border:var(--thin)}
@@ -193,8 +193,15 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
 .dpanel>.sys-wrap{padding-bottom:40px}
 .back{background:none;border:0;color:inherit;cursor:pointer;font:700 var(--size-label)/1 var(--font-label);letter-spacing:var(--track-label);text-transform:uppercase}
 .back:hover{color:var(--highlight)}
-.xbtn{margin-left:auto;margin-right:-10px;width:44px;height:44px;display:grid;place-items:center;padding:0;background:none;border:0;border-radius:0;color:inherit;cursor:pointer;transition:color var(--quick)}   /* icon-only close, right side of a panel's bar */
-.dlg .dpanel .xbtn:hover,.dlg .dpanel .xbtn:focus-visible{color:var(--accent)}:root[data-theme=dark] .dlg .dpanel .xbtn:hover,:root[data-theme=dark] .dlg .dpanel .xbtn:focus-visible{color:var(--highlight)}
+/* Panels have no top bar: a black close box sits at the top right of the content, level with the title */
+.dpanel{position:relative}
+.xwrap{position:sticky;top:0;height:0;z-index:3}
+.xbtn{position:absolute;top:24px;right:24px;width:48px;height:48px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:var(--pi);color:var(--pp);cursor:pointer;transition:background var(--quick),color var(--quick)}
+.xbtn:hover,.xbtn:focus-visible{background:var(--accent);color:#fff}
+:root[data-theme=dark] .xbtn:hover,:root[data-theme=dark] .xbtn:focus-visible{background:var(--highlight);color:#000}
+#fn,#dn,#gn{padding-right:64px}
+.dlg .dpanel .back{display:block;margin:28px 0 -14px;padding:0}
+.dlg .dpanel .back:not([hidden])+h2{margin-top:24px}
 .dlg h2{margin:32px 0 0;font-size:var(--size-section)}
 .dlg .meta{margin:8px 0 24px;color:var(--muted)}
 .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:var(--space-head)}.btns .note{color:var(--muted);font-size:14px;margin-left:8px}
@@ -238,7 +245,7 @@ body.srv .card:hover .del,body.srv .gc2:hover .del,body.srv .frow:hover .del,bod
   .dlg h2{margin-top:24px;font-size:36px}.dlg .meta{margin-bottom:16px}.big{font-size:40px;padding:16px 0 24px}
   .btns{gap:8px}.btns .sys-btn{flex:1 1 140px}.btns .note{width:100%;margin:4px 0 0}
   #grid{grid-template-columns:repeat(auto-fill,minmax(56px,1fr))}#grid div{font-size:24px;padding:10px 0}
-  .artbox{padding:12px}.back{padding:14px 0}
+  .artbox{padding:12px}.xbtn{top:12px;right:12px;width:44px;height:44px}
   .sys-footer .sys-wrap{padding-top:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
   .homepanel{padding:20px;margin-bottom:var(--gutter-sm)}.homepanel p{margin-bottom:16px}.homepanel h1{font-size:36px}
 }
@@ -394,16 +401,16 @@ if(document.documentElement.classList.contains("home"))rd.start();
   <div class="btns sbtns"><button class="sys-btn sys-btn--md sys-btn--ghost" id="dno" type="button">Cancel</button><button class="sys-btn sys-btn--md warn" id="dgo" type="button">Delete</button></div>
 </div></section>
 
-<section id="fdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="fn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="xbtn" id="fclose" type="button" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div></div>
+<section id="fdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="fn"><div class="dpanel"><div class="xwrap"><button class="xbtn" id="fclose" type="button" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
   <div class="sys-wrap"><h2 class="sys-display" id="fn"></h2><p class="meta sys-label" id="fm"></p><div id="frn" class="localonly" hidden></div><div id="fstyles"></div></div></div></section>
 
-<section id="gdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="gn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="xbtn" id="gclose" type="button" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div></div>
+<section id="gdlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="gn"><div class="dpanel"><div class="xwrap"><button class="xbtn" id="gclose" type="button" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
   <div class="sys-wrap"><h2 class="sys-display" id="gn"></h2><p class="meta sys-label" id="gm"></p>
   <div class="btns"><button class="sys-btn sys-btn--md" id="gfin">Show in Finder</button><span class="note" id="gnote"></span></div>
   <div class="artbox"><img id="gimg" alt=""></div></div></div></section>
 
-<section id="dlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="dn"><div class="dpanel"><div class="sys-header"><div class="sys-wrap sys-bar"><button class="back" id="close" type="button" hidden></button><button class="xbtn" id="xclose" type="button" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div></div>
-  <div class="sys-wrap"><h2 class="sys-display" id="dn"></h2><p class="meta sys-label" id="dm"></p>
+<section id="dlg" class="dlg" role="dialog" aria-modal="true" aria-labelledby="dn"><div class="dpanel"><div class="xwrap"><button class="xbtn" id="xclose" type="button" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
+  <div class="sys-wrap"><button class="back" id="close" type="button" hidden></button><h2 class="sys-display" id="dn"></h2><p class="meta sys-label" id="dm"></p>
   <div class="btns"><button class="sys-btn sys-btn--md" id="fin">Show in Finder</button><button class="sys-btn sys-btn--md sys-btn--ghost" id="cpn">Copy name</button><span class="note" id="note"></span></div>
   <div class="big" id="dbig" contenteditable spellcheck="false" role="textbox" aria-label="Type your own text to preview this font"></div><p class="sys-label bighint">Click the text and type your own</p><div id="grid" class="grid"></div></div></div></section>
 
