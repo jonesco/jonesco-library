@@ -7,4 +7,4 @@ for pid in $(lsof -tiTCP:$PORT -sTCP:LISTEN 2>/dev/null); do
 done
 sleep 0.5
 cd "$DIR"
-nohup .venv/bin/python tools/serve.py >/tmp/library-server.log 2>&1 </dev/null &
+nohup arch -arm64 .venv/bin/python tools/serve.py >/tmp/library-server.log 2>&1 </dev/null &

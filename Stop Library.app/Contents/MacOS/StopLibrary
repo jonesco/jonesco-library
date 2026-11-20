@@ -1,0 +1,6 @@
+#!/bin/bash
+# Stops the local library server (no Terminal window). Does nothing if it isn't running.
+PORT=8765
+for pid in $(lsof -tiTCP:$PORT -sTCP:LISTEN 2>/dev/null); do
+  ps -p "$pid" -o command= | grep -q "tools/serve.py" && kill "$pid"
+done
