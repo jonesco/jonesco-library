@@ -60,11 +60,13 @@
 /* Pulling past the top or bottom shows the root background: header color above, footer color below (yellow on the overview, which has no footer) */
 html{min-height:100%;background:linear-gradient(to bottom,var(--hb) 50%,var(--foot) 50%)}
 html.home{--foot:var(--highlight)}
+html.home[data-theme=dark]{--foot:#000}   /* the overview's field is black in dark mode */
 :root[data-theme=dark]{--hb:#fff;--hf:#000;--hm:#555}
 .herob{background:var(--hb);color:var(--hf)}
 body.online #drop,body.online #dropmsg,body.online .localonly{display:none}
 /* Overview: a full-screen reaction-diffusion canvas with two links. Hides everything else while on the home view. */
 #home{display:none;position:relative;height:calc(100vh - 64px);height:calc(100dvh - 64px);min-height:440px;background:var(--highlight);overflow:hidden}
+:root[data-theme=dark] #home{background:#000}   /* dark mode reverses the overview pattern: yellow on black */
 .home #home{display:block}
 .home .herob,.home .sys-section-nav,.home .bar,.home main,.home .sys-footer{display:none}
 .sys-header .sys-nav{display:none}   /* no page links in the header: the overview and the switch under each title do that job */
@@ -300,13 +302,14 @@ const rd=(()=>{
   // filtering and thresholded with derivative-based anti-aliasing, so the edges stay sharp at any size. Falls back to a 2D canvas.
   const cv=document.getElementById("rd"),reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
   const gl=cv.getContext("webgl2",{alpha:false,antialias:false}),ctx=gl?null:cv.getContext("2d",{alpha:false});
-  const F=.0545,K=.062,DU=.5,DV=.25,BG=[1,.898,0],FG=[0,0,0];   // half the diffusion of the textbook values: stripes about 0.7x as wide   // yellow field, black pattern (the brand highlight), in both themes
+  const F=.0545,K=.062,DU=.5,DV=.25,Y=[1,.898,0],B=[0,0,0];   // half the diffusion of the textbook values: stripes about 0.7x as wide
+  const dark=()=>document.documentElement.dataset.theme==="dark",BG=()=>dark()?B:Y,FG=()=>dark()?Y:B;   // yellow field, black pattern; reversed in dark mode
   let W=0,H=0,u,v,u2,v2,u8,img,raf=0,on=false,steps=8,tm,prog,tex,sc=1,cs=2,booms=[],lw=0,lh=1;
   if(gl){const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o};
     prog=gl.createProgram();
     gl.attachShader(prog,sh(gl.VERTEX_SHADER,"#version 300 es\nout vec2 uv;void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);uv=vec2(p.x,1.-p.y);gl_Position=vec4(p*2.-1.,0,1);}"));
     gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,"#version 300 es\nprecision highp float;in vec2 uv;uniform sampler2D T;uniform vec3 bg,fg;out vec4 o;void main(){float v=texture(T,uv).r;float w=max(fwidth(v)*.7,.002);float s=smoothstep(.48-w,.48+w,v);o=vec4(mix(bg,fg,s),1.);}"));
-    gl.linkProgram(prog);gl.useProgram(prog);gl.uniform3fv(gl.getUniformLocation(prog,"bg"),BG);gl.uniform3fv(gl.getUniformLocation(prog,"fg"),FG);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1)}
+    gl.linkProgram(prog);gl.useProgram(prog);gl.pixelStorei(gl.UNPACK_ALIGNMENT,1)}
   function seed(cx,cy,r){for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(dx*dx+dy*dy>r*r)continue;const i=((cy+dy+H)%H)*W+(cx+dx+W)%W;u[i]=.5;v[i]=1}}
   function step(){
     for(let y=0;y<H;y++){const yu=(y?y-1:H-1)*W,yd=(y<H-1?y+1:0)*W,yc=y*W;
@@ -317,9 +320,10 @@ const rd=(()=>{
     let t=u;u=u2;u2=t;t=v;v=v2;v2=t}
   function draw(){if(!u)return;
     if(gl){for(let i=0,n=W*H;i<n;i++){const s=v[i]*3.2;u8[i]=s<0?0:s>1?255:s*255|0}
+      gl.uniform3fv(gl.getUniformLocation(prog,"bg"),BG());gl.uniform3fv(gl.getUniformLocation(prog,"fg"),FG());
       gl.bindTexture(gl.TEXTURE_2D,tex);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,W,H,gl.RED,gl.UNSIGNED_BYTE,u8);gl.drawArrays(gl.TRIANGLES,0,3);return}
-    const d=img.data,b0=[255,229,0];                                 // 2D fallback: same colors, soft edges
-    for(let i=0,j=0,n=W*H;i<n;i++,j+=4){let s=(v[i]-.08)/.14;s=s<0?0:s>1?1:s;s=s*s*(3-2*s);d[j]=b0[0]*(1-s);d[j+1]=b0[1]*(1-s);d[j+2]=0;d[j+3]=255}
+    const d=img.data,b0=BG().map(c=>c*255),f0=FG().map(c=>c*255);   // 2D fallback: same colors, soft edges
+    for(let i=0,j=0,n=W*H;i<n;i++,j+=4){let s=(v[i]-.08)/.14;s=s<0?0:s>1?1:s;s=s*s*(3-2*s);for(let c=0;c<3;c++)d[j+c]=b0[c]+(f0[c]-b0[c])*s;d[j+3]=255}
     ctx.putImageData(img,0,0)}
   function init(){const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;
     const coarse=matchMedia("(pointer:coarse)").matches,cell=Math.max(coarse?2:1.5,Math.sqrt(w*h/(coarse?90000:240000)));   // fine grid; a little coarser on phones
